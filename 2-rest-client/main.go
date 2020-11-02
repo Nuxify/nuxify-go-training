@@ -17,17 +17,17 @@ type values struct {
 
 func main() {
 	CreatePost()
+	GetAllPosts()
+	GetPostByID()
+	DeleteByID()
+	UpdatePost()
 }
 
 // CreatePost create a post
 func CreatePost() {
-	values := map[string]interface{}{
-		"title":  "GarzAlma",
-		"body":   "bar",
-		"userId": 1,
-	}
+	book := values{"GarzAlma", "bar", 1}
 
-	jsonValue, err := json.Marshal(values)
+	jsonValue, err := json.Marshal(book)
 	if err != nil {
 		panic(err)
 	}
@@ -50,9 +50,10 @@ func CreatePost() {
 
 // DeleteByID delete id
 func DeleteByID() {
-	values := values{"GarzAlma", "bar", 1}
-	jsonReq, err := json.Marshal(values)
-	req, err := http.NewRequest(http.MethodDelete, "https://jsonplaceholder.typicode.com/posts/1", bytes.NewBuffer(jsonReq))
+	book := values{"GarzAlma", "bar", 1}
+
+	jsonValue, err := json.Marshal(book)
+	req, err := http.NewRequest(http.MethodDelete, "https://jsonplaceholder.typicode.com/posts/1", bytes.NewBuffer(jsonValue))
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -65,6 +66,27 @@ func DeleteByID() {
 	// Convert response body to string
 	bodyString := string(bodyBytes)
 	fmt.Println(bodyString)
+}
+
+// GetAllPosts get all posts
+func GetAllPosts() {
+
+	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+
+		panic(err)
+	}
+
+	fmt.Println(string(body))
 }
 
 // GetPostByID get post by id
@@ -92,28 +114,31 @@ func GetPostByID() {
 	fmt.Println("POST REQUEST:", response)
 }
 
-// GetAllPosts get all posts
-func GetAllPosts() {
-
-	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-
-		panic(err)
-	}
-
-	fmt.Println(string(body))
-}
-
 // UpdatePost update post by id
 func UpdatePost() {
+	book := values{"GarzAlma", "bar", 1}
 
+	// initialize http client
+	client := &http.Client{}
+
+	// marshal User to json
+	jsonValue, err := json.Marshal(book)
+	if err != nil {
+		panic(err)
+	}
+
+	// set the HTTP method, url, and request body
+	req, err := http.NewRequest(http.MethodPatch, "https://jsonplaceholder.typicode.com/posts/1", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		panic(err)
+	}
+
+	// set the request header Content-Type for json
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(resp.StatusCode)
 }
