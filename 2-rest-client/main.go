@@ -9,51 +9,55 @@ import (
 	"net/http"
 )
 
-type values struct {
+type createRequestPayload struct {
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 	UserID int    `json:"userId"`
 }
+type response struct {
+	ID     int    `json:"id"`
+	Title  string `json:"title"`
+	Body   string `json:"body"`
+	UserID int    `json:"userId"`
+}
+type updateRequestPayload struct {
+	Title string `json:"title"`
+}
 
 func main() {
-	CreatePost()
-	GetAllPosts()
-	GetPostByID()
-	DeleteByID()
+	// CreatePost()
+	// GetAllPosts()
+	// GetPostByID()
+	// DeleteByID()
 	UpdatePost()
 }
 
 // CreatePost create a post
 func CreatePost() {
-	book := values{"GarzAlma", "bar", 1}
-
-	jsonValue, err := json.Marshal(book)
+	payload := createRequestPayload{
+		Title:  "GarzAlma",
+		Body:   "bar",
+		UserID: 1,
+	}
+	jsonValue, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
 	}
-
 	resp, err := http.Post("https://jsonplaceholder.typicode.com/posts", "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
-
-	var response map[string]interface{}
-
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	var result response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		panic(err)
 	}
-
-	fmt.Println("POST REQUEST:", response)
-
+	fmt.Println("POST REQUEST:", result.Title)
 }
 
 // DeleteByID delete id
 func DeleteByID() {
-	book := values{"GarzAlma", "bar", 1}
-
-	jsonValue, err := json.Marshal(book)
-	req, err := http.NewRequest(http.MethodDelete, "https://jsonplaceholder.typicode.com/posts/1", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest(http.MethodDelete, "https://jsonplaceholder.typicode.com/posts/1", nil)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -62,7 +66,6 @@ func DeleteByID() {
 
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-
 	// Convert response body to string
 	bodyString := string(bodyBytes)
 	fmt.Println(bodyString)
@@ -70,59 +73,42 @@ func DeleteByID() {
 
 // GetAllPosts get all posts
 func GetAllPosts() {
-
 	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
-
 	if err != nil {
 		panic(err)
 	}
-
 	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-
+	var results []response
+	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
 		panic(err)
 	}
-
-	fmt.Println(string(body))
+	fmt.Println("GET ALL POSTS", results)
 }
 
 // GetPostByID get post by id
 func GetPostByID() {
-
 	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts/1")
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
-
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-
 	// Convert response body to string
 	bodyString := string(bodyBytes)
 	fmt.Println("API Response as String:\n" + bodyString)
-
-	// Convert response body to map interface
-	var response map[string]interface{}
-
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	var results []response
+	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
 		panic(err)
 	}
-
-	fmt.Println("POST REQUEST:", response)
+	fmt.Println("POST REQUEST:", results)
 }
 
 // UpdatePost update post by id
 func UpdatePost() {
-	book := values{"GarzAlma", "bar", 1}
-
-	// initialize http client
+	payload := updateRequestPayload{Title: "Update GarzAlma into GarzClang"}
 	client := &http.Client{}
-
 	// marshal User to json
-	jsonValue, err := json.Marshal(book)
+	jsonValue, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
 	}
@@ -132,13 +118,21 @@ func UpdatePost() {
 	if err != nil {
 		panic(err)
 	}
-
 	// set the request header Content-Type for json
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
-
 	fmt.Println(resp.StatusCode)
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	// Convert response body to string
+	bodyString := string(bodyBytes)
+	fmt.Println("API Response as String:\n" + bodyString)
+	var results []response
+	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
+		panic(err)
+	}
+	fmt.Println("POST REQUEST:", results)
 }
