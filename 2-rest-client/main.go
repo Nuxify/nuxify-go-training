@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
+	"time"
 )
 
 type createRequestPayload struct {
@@ -24,6 +23,10 @@ type updateRequestPayload struct {
 	Title string `json:"title"`
 }
 
+var (
+	client *http.Client = &http.Client{Timeout: 3 * time.Second}
+)
+
 func main() {
 	// CreatePost()
 	// GetAllPosts()
@@ -34,26 +37,14 @@ func main() {
 
 // CreatePost create a post
 func CreatePost() {
+	var result response
 	payload := createRequestPayload{
 		Title:  "GarzAlma",
 		Body:   "bar",
 		UserID: 1,
 	}
-	// marshal User to json
-	jsonValue, err := json.Marshal(payload)
+	err := HTTPPost("https://jsonplaceholder.typicode.com/posts", &payload, &result)
 	if err != nil {
-		panic(err)
-	}
-	// set the HTTP method, url, and request body
-	resp, err := http.Post("https://jsonplaceholder.typicode.com/posts", "application/json", bytes.NewBuffer(jsonValue))
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	var result response
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		panic(err)
 	}
 	fmt.Println("POST REQUEST:", result.Title)
@@ -61,34 +52,19 @@ func CreatePost() {
 
 // DeleteByID delete id
 func DeleteByID() {
-	// set the HTTP method, url, and request body
-	req, err := http.NewRequest(http.MethodDelete, "https://jsonplaceholder.typicode.com/posts/1", nil)
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	var result response
+	err := HTTPDelete("https://jsonplaceholder.typicode.com/posts/1", &result)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
-
-	defer resp.Body.Close()
-
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	// Convert response body to string
-	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
+	fmt.Println("POST REQUEST:", result)
 }
 
 // GetAllPosts get all posts
 func GetAllPosts() {
-	// set the HTTP method, url, and request body
-	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
 	var results []response
-	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
+	err := HTTPGet("https://jsonplaceholder.typicode.com/posts", &results)
+	if err != nil {
 		panic(err)
 	}
 	fmt.Println("GET ALL POSTS", results)
@@ -96,16 +72,9 @@ func GetAllPosts() {
 
 // GetPostByID get post by id
 func GetPostByID() {
-	// set the HTTP method, url, and request body
-	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts/1")
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
 	var result response
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	err := HTTPGet("https://jsonplaceholder.typicode.com/posts/1", &result)
+	if err != nil {
 		panic(err)
 	}
 	fmt.Println("POST REQUEST:", result)
@@ -113,30 +82,96 @@ func GetPostByID() {
 
 // UpdatePost update post by id
 func UpdatePost() {
-	payload := updateRequestPayload{Title: "Update GarzAlma into GarzClang"}
-	client := &http.Client{}
-	// marshal User to json
-	jsonValue, err := json.Marshal(payload)
+	var result response
+	payload := updateRequestPayload{Title: "GarzAlma update into GarzClang"}
+
+	err := HTTPPatch("https://jsonplaceholder.typicode.com/posts/1", &payload, &result)
 	if err != nil {
 		panic(err)
 	}
-	// set the HTTP method, url, and request body
-	req, err := http.NewRequest(http.MethodPatch, "https://jsonplaceholder.typicode.com/posts/1", bytes.NewBuffer(jsonValue))
+	fmt.Println("POST REQUEST:", result.Title)
+}
+
+// HTTPGet is a http get request helper
+func HTTPGet(url string, response interface{}) error {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	// set the request header Content-Type for json
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
-
 	defer resp.Body.Close()
-
-	var result response
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		panic(err)
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return err
 	}
-	fmt.Println("POST REQUEST:", result)
+	return nil
+}
+
+// HTTPDelete is a http get request helper
+func HTTPDelete(url string, response interface{}) error {
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// HTTPPost is a http post request helper
+func HTTPPost(url string, payload, response interface{}) error {
+	// convert to reader
+	buf := new(bytes.Buffer)
+	err := json.NewEncoder(buf).Encode(payload)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPost, url, buf)
+	if err != nil {
+		return err
+	}
+	// add custom headers
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// HTTPPatch is a http post request helper
+func HTTPPatch(url string, payload, response interface{}) error {
+	// convert to reader
+	buf := new(bytes.Buffer)
+	err := json.NewEncoder(buf).Encode(payload)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPatch, url, buf)
+	if err != nil {
+		return err
+	}
+	// add custom headers
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return err
+	}
+	return nil
 }
