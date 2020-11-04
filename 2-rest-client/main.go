@@ -39,15 +39,19 @@ func CreatePost() {
 		Body:   "bar",
 		UserID: 1,
 	}
+	// marshal User to json
 	jsonValue, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
 	}
+	// set the HTTP method, url, and request body
 	resp, err := http.Post("https://jsonplaceholder.typicode.com/posts", "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		panic(err)
 	}
+
 	defer resp.Body.Close()
+
 	var result response
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		panic(err)
@@ -57,6 +61,7 @@ func CreatePost() {
 
 // DeleteByID delete id
 func DeleteByID() {
+	// set the HTTP method, url, and request body
 	req, err := http.NewRequest(http.MethodDelete, "https://jsonplaceholder.typicode.com/posts/1", nil)
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -65,6 +70,7 @@ func DeleteByID() {
 	}
 
 	defer resp.Body.Close()
+
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	// Convert response body to string
 	bodyString := string(bodyBytes)
@@ -73,11 +79,14 @@ func DeleteByID() {
 
 // GetAllPosts get all posts
 func GetAllPosts() {
+	// set the HTTP method, url, and request body
 	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
 	if err != nil {
 		panic(err)
 	}
+
 	defer resp.Body.Close()
+
 	var results []response
 	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
 		panic(err)
@@ -87,20 +96,19 @@ func GetAllPosts() {
 
 // GetPostByID get post by id
 func GetPostByID() {
+	// set the HTTP method, url, and request body
 	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts/1")
 	if err != nil {
 		panic(err)
 	}
+
 	defer resp.Body.Close()
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	// Convert response body to string
-	bodyString := string(bodyBytes)
-	fmt.Println("API Response as String:\n" + bodyString)
-	var results []response
-	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
+
+	var result response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		panic(err)
 	}
-	fmt.Println("POST REQUEST:", results)
+	fmt.Println("POST REQUEST:", result)
 }
 
 // UpdatePost update post by id
@@ -112,7 +120,6 @@ func UpdatePost() {
 	if err != nil {
 		panic(err)
 	}
-
 	// set the HTTP method, url, and request body
 	req, err := http.NewRequest(http.MethodPatch, "https://jsonplaceholder.typicode.com/posts/1", bytes.NewBuffer(jsonValue))
 	if err != nil {
@@ -124,15 +131,12 @@ func UpdatePost() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(resp.StatusCode)
+
 	defer resp.Body.Close()
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	// Convert response body to string
-	bodyString := string(bodyBytes)
-	fmt.Println("API Response as String:\n" + bodyString)
-	var results []response
-	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
+
+	var result response
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		panic(err)
 	}
-	fmt.Println("POST REQUEST:", results)
+	fmt.Println("POST REQUEST:", result)
 }
