@@ -10,15 +10,18 @@ import (
 )
 
 func main() {
+	port := ":8080"
+
 	fmt.Println("Starting Server....")
 
 	router := chi.NewRouter()
-	router.Get("/api/getExample", getHandler)
-	router.Post("/api/createExample", postHandler)
-	router.Patch("/api/updateExample", patchHandler)
-	router.Delete("/api/deleteExample", delhHandler)
-	fmt.Println("Server is listening on port 8080....")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	router.Get("/api/posts", getAllHandler)
+	router.Get("/api/posts/{id}", getByIDHandler)
+	router.Post("/api/posts", postHandler)
+	router.Patch("/api/posts/{id}", patchHandler)
+	router.Delete("/api/posts/{id}", delhHandler)
+	fmt.Println("Server is listening on " + port)
+	log.Fatal(http.ListenAndServe(port, router))
 
 }
 
@@ -26,7 +29,11 @@ func delhHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("Your request has been deleted!")
 }
 
-func getHandler(w http.ResponseWriter, r *http.Request) {
+func getAllHandler(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode("You got me a GET Request!")
+}
+
+func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("You got me a GET Request!")
 }
 
