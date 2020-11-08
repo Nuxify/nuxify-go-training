@@ -36,6 +36,17 @@ type PostResponse struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
+// PatchRequest use for Post Request
+type PatchRequest struct {
+	Content string `json:"content"`
+}
+
+// PatchResponse use for Post Response
+type PatchResponse struct {
+	Content   string `json:"content"`
+	Timestamp int64  `json:"timestamp"`
+}
+
 // StudentInformationResponse use for response student info
 type StudentInformationResponse struct {
 	ID     int    `json:"id"`
@@ -73,7 +84,31 @@ func main() {
 
 // deleteHandler Handle Delete Function
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode("Your request has been deleted!")
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully deleted post data.",
+		Data: &StudentInformationResponse{
+			ID:     idNum,
+			Name:   "Karl",
+			School: "HCDC",
+		},
+	}
+
+	response.JSON(w)
 }
 
 // getAllHandler Handle GetAll Function
@@ -116,7 +151,7 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 		response := &HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
 			Success: false,
-			Message: "An error has occurred while processing request.",
+			Message: "Invalid payload sent.",
 		}
 
 		response.JSON(w)
@@ -139,7 +174,41 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 // patchHandler Handle Update Functio
 func patchHandler(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode("Your request has been updated!")
+	var request PatchRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// Verify Content Must Not Empty
+	if len(strings.TrimSpace(request.Content)) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Content cannot be empty.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully updated post.",
+		Data: &PatchResponse{
+			Content:   request.Content,
+			Timestamp: time.Now().Unix(),
+		},
+	}
+
+	response.JSON(w)
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
