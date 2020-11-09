@@ -22,13 +22,13 @@ type HTTPResponseVM struct {
 	Data      interface{} `json:"data"`
 }
 
-// PostRequest use for Post Request
+// PostRequest use for post request
 type PostRequest struct {
 	AuthorID int    `json:"authorId"`
 	Content  string `json:"content"`
 }
 
-// PostResponse use for Post Response
+// PostResponse use for post response
 type PostResponse struct {
 	ID        int    `json:"id"`
 	AuthorID  int    `json:"authorId"`
@@ -36,12 +36,12 @@ type PostResponse struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-// PatchRequest use for Post Request
+// PatchRequest use for post request
 type PatchRequest struct {
 	Content string `json:"content"`
 }
 
-// PatchResponse use for Post Response
+// PatchResponse use for post response
 type PatchResponse struct {
 	Content   string `json:"content"`
 	Timestamp int64  `json:"timestamp"`
@@ -61,7 +61,7 @@ func main() {
 
 	router := chi.NewRouter()
 
-	// Initialize Middlewares
+	// initialize middlewares
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
@@ -82,36 +82,18 @@ func main() {
 	log.Fatal(http.ListenAndServe(port, router))
 }
 
-// deleteHandler Handle Delete Function
+// deleteHandler handle delete function
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	idNum, err := strconv.Atoi(id)
-	if err != nil {
-		response := &HTTPResponseVM{
-			Status:  http.StatusUnprocessableEntity,
-			Success: false,
-			Message: "Invalid payload sent.",
-		}
-
-		response.JSON(w)
-		return
-	}
-
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully deleted post data.",
-		Data: &StudentInformationResponse{
-			ID:     idNum,
-			Name:   "Karl",
-			School: "HCDC",
-		},
 	}
 
 	response.JSON(w)
 }
 
-// getAllHandler Handle GetAll Function
+// getAllHandler handle getall function
 func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	var students []StudentInformationResponse
 
@@ -143,7 +125,7 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// getByIDHandler Handle Get By ID Function
+// getByIDHandler handle get by id function
 func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	idNum, err := strconv.Atoi(id)
@@ -172,7 +154,7 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// patchHandler Handle Update Functio
+// patchHandler handle update function
 func patchHandler(w http.ResponseWriter, r *http.Request) {
 	var request PatchRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -186,7 +168,7 @@ func patchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify Content Must Not Empty
+	// verify vontent must not empty
 	if len(strings.TrimSpace(request.Content)) == 0 {
 		response := HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
@@ -211,6 +193,7 @@ func patchHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
+// postHandler handle create function
 func postHandler(w http.ResponseWriter, r *http.Request) {
 	var request PostRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -224,7 +207,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify Content Must Not Empty
+	// verify content must not empty
 	if len(strings.TrimSpace(request.Content)) == 0 {
 		response := HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
@@ -251,7 +234,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// JSON converts http responsewriter to JSON
+// JSON converts http responsewriter to json
 func (response *HTTPResponseVM) JSON(w http.ResponseWriter) {
 	if response.Data == nil {
 		response.Data = map[string]interface{}{}
