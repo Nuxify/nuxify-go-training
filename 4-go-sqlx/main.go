@@ -1,47 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
-// User of type struct
+// User as new type struct
 type User struct {
 	ID   int    `db:"id"`
 	Name string `db:"name"`
 }
 
-var schema string = "CREATE TABLE `users` (	  	`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,		  	`name` varchar(255) NOT NULL		)"
-
 func main() {
-	conn, err := sqlx.Connect("mysql", "root:root@tcp(localhost:3306)/story")
+	db, err := sqlx.Connect("mysql", "root:1234@(localhost:3306)/test_sqlx")
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
-	conn.MustExec(schema)
-	res, err := conn.Exec("INSERT INTO users (name) VALUES(\"Peter\")")
-	if err != nil {
-		panic(err)
-	}
-	id, err := res.LastInsertId()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Created user with id:%d", id)
-	var user User
-	err = conn.Get(&user, "select * from users where id=?", id)
-	if err != nil {
-		panic(err)
-	}
-	_, err = conn.Exec("UPDATE users set name=\"John\" where id=?", id)
-	if err != nil {
-		panic(err)
-	}
-	_, err = conn.Exec("DELETE FROM users where id=?", id)
-	if err != nil {
-		panic(err)
-	}
+
+	user := []User{}
+
+	db.Select(&user, "select * from users")
+
+	log.Println("users...")
+	log.Println(user)
 
 }
