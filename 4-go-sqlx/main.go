@@ -25,9 +25,11 @@ func main() {
 	db.Select(&user, "select * from users")
 
 	// createUser()
+	// deleteUser()
+	// updateUser()
 
 	log.Println("users...")
-	log.Println(user)
+	fmt.Println(user)
 
 }
 
@@ -45,4 +47,26 @@ func createUser() {
 		panic(err)
 	}
 	fmt.Printf("Created user with id:%d", id)
+}
+
+func deleteUser() {
+	db, err := sqlx.Connect("mysql", "root:1234@(localhost:3306)/test_sqlx")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("DELETE FROM users where id=6")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func updateUser() {
+	db, err := sqlx.Connect("mysql", "root:1234@(localhost:3306)/test_sqlx")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("UPDATE users set name=\"TEST\" where id=5")
+	if err != nil {
+		panic(err)
+	}
 }
