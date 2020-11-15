@@ -76,7 +76,7 @@ func main() {
 	// GetPost(6)
 	// GetPosts()
 	// DeletePost(6)
-	// UpdatePost(6)
+	// UpdatePost(3)
 
 	// ========= Comment =========
 
@@ -268,8 +268,8 @@ func DeletePost(postID int64) {
 // UpdatePost function that update post
 func UpdatePost(postID int64) {
 	post := &Post{
-		AuthorID: postID,
-		Content:  "Update Post Example",
+		ID:      postID,
+		Content: "Check post update",
 	}
 
 	// form the statement
