@@ -84,7 +84,7 @@ func main() {
 	// GetComment(6)
 	// GetComments()
 	// DeleteComment(3)
-	UpdateComment(2)
+	// UpdateComment(2)
 }
 
 // ====================== User ========================
