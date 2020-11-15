@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// MySQLDBHandler as type struct
 type MySQLDBHandler struct {
 	Conn *sqlx.DB
 }
@@ -21,14 +22,35 @@ type User struct {
 	Email         string
 	FirstName     string    `db:"first_name"`
 	LastName      string    `db:"last_name"`
-	ContactNumber string    `db:"contact_number"`
+	ContactNumber string    `db:"contact"`
 	CreatedAt     time.Time `db:"created_at"`
 	UpdatedAt     time.Time `db:"updated_at"`
 }
 
+// Post as new type struct
+type Post struct {
+	ID        int64
+	AuthorID  int64     `db:"author_id"`
+	Content   string    `db:"content"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
+// Comment as new type struct
+type Comment struct {
+	ID        int64
+	PostID    int64     `db:"post_id"`
+	AuthorID  int64     `db:"author_id"`
+	Content   string    `db:"content"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 var (
 	mysqlDBHandler *MySQLDBHandler
-	tableName      string = "users"
+	userTable      string = "users"
+	postTable      string = "posts"
+	commentTable   string = "comment"
 )
 
 func main() {
@@ -41,10 +63,28 @@ func main() {
 		panic(err)
 	}
 
-	//InsertUser()
-	//GetUser(3)
-	GetUsers()
+	// ========= User =========
+	// InsertUser()
+	// GetUser(3)
+	// GetUsers()
+	// DeleteUser(6)
+	// UpdateUser(6)
 
+	// ========= Post =========
+
+	// InsertPost(6)
+	// GetPost(6)
+	// GetPosts()
+	// DeletePost(6)
+	// UpdatePost(6)
+
+	// ========= Comment =========
+
+	// InsertComment(6)
+	// GetComment(6)
+	// GetComments()
+	// DeleteComment(3)
+	UpdateComment(2)
 }
 
 // ====================== User ========================
@@ -52,14 +92,14 @@ func main() {
 // InsertUser fucntion that create the user
 func InsertUser() {
 	user := &User{
-		Email:         "dogie@alma.com",
-		FirstName:     "Dogie",
-		LastName:      "Alma",
+		Email:         "5thexample@gmail.com",
+		FirstName:     "SecondTest",
+		LastName:      "User",
 		ContactNumber: "+639456042882",
 	}
 
 	// form the statement
-	stmt := fmt.Sprintf("INSERT INTO %s (email,first_name,last_name,contact_number) VALUES (:email,:first_name,:last_name,:contact_number)", tableName)
+	stmt := fmt.Sprintf("INSERT INTO %s (email,first_name,last_name,contact) VALUES (:email,:first_name,:last_name,:contact)", userTable)
 	res, err := mysqlDBHandler.Execute(stmt, user)
 	if err != nil {
 		log.Println(err)
@@ -84,12 +124,12 @@ func GetUser(userID int64) {
 	var users []User
 
 	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", tableName)
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", userTable)
 	err := mysqlDBHandler.Query(stmt, map[string]interface{}{
 		"id": userID,
 	}, &users)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	fmt.Println(users[0].ID, users[0].Email)
@@ -100,10 +140,10 @@ func GetUsers() {
 	var users []User
 
 	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s", tableName)
+	stmt := fmt.Sprintf("SELECT * FROM %s", userTable)
 	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &users)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	for _, user := range users {
@@ -111,9 +151,232 @@ func GetUsers() {
 	}
 }
 
+// DeleteUser function that delete user
+func DeleteUser(userID int64) {
+	user := &User{
+		ID: userID,
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("DELETE %s WHERE id=:id", userTable)
+	_, err := mysqlDBHandler.Execute(stmt, user)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("User successfully deleted..")
+}
+
+// UpdateUser function that update user
+func UpdateUser(userID int64) {
+	user := &User{
+		ID:            userID,
+		Email:         "updatedemail@example.com",
+		FirstName:     "Lecty",
+		LastName:      "Eisenach",
+		ContactNumber: "+639456042882",
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("UPDATE %s SET email=:email, first_name=:first_name, last_name=:last_name WHERE id=:id", userTable)
+	_, err := mysqlDBHandler.Execute(stmt, user)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("User successfully updated..")
+}
+
 // ====================== Post ========================
 
+// InsertPost create a new post function
+func InsertPost(authorID int64) {
+	post := &Post{
+		AuthorID: authorID,
+		Content:  "New post has been created",
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("INSERT INTO %s (author_id, content) VALUES (:author_id, :content)", postTable)
+	res, err := mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
+		log.Println(err)
+
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			log.Println("Duplicate user")
+		} else {
+			panic(err)
+		}
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("[POST ID]", id)
+}
+
+// GetPost function that get user by id
+func GetPost(postID int64) {
+	var posts []Post
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", postTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"author_id": postID,
+	}, &posts)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println(posts[0].ID, posts[0].Content)
+}
+
+//GetPosts Get all posts fucntion
+func GetPosts() {
+	var posts []Post
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s", postTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &posts)
+	if err != nil {
+		log.Println(err)
+	}
+
+	for _, post := range posts {
+		fmt.Println(post.AuthorID, post.Content)
+	}
+}
+
+// DeletePost function that delete user
+func DeletePost(postID int64) {
+	post := &Post{
+		ID: postID,
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", postTable)
+	_, err := mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("Post successfully deleted..")
+}
+
+// UpdatePost function that update post
+func UpdatePost(authorID int64) {
+	post := &Post{
+		AuthorID: authorID,
+		Content:  "Update Post Example",
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE author_id=:author_id", postTable)
+	_, err := mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("Post successfully updated..")
+}
+
 // ====================== Comment ========================
+
+// InsertComment create a new comment function
+func InsertComment(authorID int64) {
+	comment := &Comment{
+		PostID:   3,
+		AuthorID: authorID,
+		Content:  "Blah Blah",
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("INSERT INTO %s (post_id, author_id, content) VALUES (:post_id, :author_id, :content)", commentTable)
+	res, err := mysqlDBHandler.Execute(stmt, comment)
+	if err != nil {
+		log.Println(err)
+
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			log.Println("Duplicate user")
+		} else {
+			panic(err)
+		}
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("[COMMENT ID]", id)
+}
+
+// GetComment function that get comment by id
+func GetComment(commentID int64) {
+	var comments []Comment
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", commentTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"author_id": commentID,
+	}, &comments)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println(comments[0].ID, comments[0].Content)
+}
+
+//GetComments Get all comments fucntion
+func GetComments() {
+	var comments []Comment
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s", commentTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &comments)
+	if err != nil {
+		log.Println(err)
+	}
+
+	for _, post := range comments {
+		fmt.Println(post.AuthorID, post.Content)
+	}
+}
+
+// DeleteComment function that delete comment
+func DeleteComment(commentID int64) {
+	comment := &Comment{
+		ID: commentID,
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", commentTable)
+	_, err := mysqlDBHandler.Execute(stmt, comment)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("Comment successfully deleted..")
+}
+
+// UpdateComment function that update comment
+func UpdateComment(commentID int64) {
+	comment := &Comment{
+		ID:      commentID,
+		Content: "Update Comment",
+	}
+
+	// form the statement
+	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", commentTable)
+	_, err := mysqlDBHandler.Execute(stmt, comment)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("Comment successfully updated..")
+}
 
 // ============================== MySQL Helper ==============================
 
