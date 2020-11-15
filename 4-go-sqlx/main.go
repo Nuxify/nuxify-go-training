@@ -266,14 +266,14 @@ func DeletePost(postID int64) {
 }
 
 // UpdatePost function that update post
-func UpdatePost(authorID int64) {
+func UpdatePost(postID int64) {
 	post := &Post{
-		AuthorID: authorID,
+		AuthorID: postID,
 		Content:  "Update Post Example",
 	}
 
 	// form the statement
-	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE author_id=:author_id", postTable)
+	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", postTable)
 	_, err := mysqlDBHandler.Execute(stmt, post)
 	if err != nil {
 		log.Println(err)
