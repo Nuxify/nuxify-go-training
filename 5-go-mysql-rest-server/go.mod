@@ -1,3 +1,3 @@
-module rest-server.exe
+module rest-server
 
 go 1.15
