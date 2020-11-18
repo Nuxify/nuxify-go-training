@@ -52,17 +52,16 @@ type HTTPResponseVM struct {
 	Data      interface{} `json:"data"`
 }
 
-// UserRequest data struct for user request
-type UserRequest struct {
+// CreateUserRequest data struct for create user request
+type CreateUserRequest struct {
 	Email         string `json:"email"`
 	FirstName     string `json:"firstName"`
 	LastName      string `json:"lastName"`
 	ContactNumber string `json:"contactNumber"`
 }
 
-// UserInformationResponse data struct for all user
-type UserInformationResponse struct {
-	Email         string `json:"email"`
+// UpdateUserRequest data struct for update user request
+type UpdateUserRequest struct {
 	FirstName     string `json:"firstName"`
 	LastName      string `json:"lastName"`
 	ContactNumber string `json:"contactNumber"`
@@ -119,7 +118,7 @@ func main() {
 	mysqlDBHandler = &MySQLDBHandler{}
 
 	// connect to database
-	err := mysqlDBHandler.Connect("127.0.0.1", "3306", "nuxify_training", "root", "1234")
+	err := mysqlDBHandler.Connect("127.0.0.1", "3306", "nuxify_db_training", "root", "123")
 	if err != nil {
 		panic(err)
 	}
@@ -146,6 +145,7 @@ func main() {
 		router.Route("/user", func(router chi.Router) {
 			router.Post("/", InsertUserHandler)
 			router.Get("/{id}", GetUserByIDHandler)
+			router.Patch("/{id}", UpdateUserHandler)
 			router.Delete("/{id}", DeleteUserHandler)
 		})
 
@@ -160,7 +160,7 @@ func main() {
 
 // InsertUserHandler creates a new user resource
 func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
-	var request UserRequest
+	var request CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
@@ -324,24 +324,38 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 		response.JSON(w)
 		return
+	} else if len(users) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusNotFound,
+			Success: false,
+			Message: "No users found.",
+		}
+
+		response.JSON(w)
+		return
 	}
 
+	var usersResponse []UserResponse
+
 	for _, user := range users {
-		response := &HTTPResponseVM{
-			Status:  http.StatusOK,
-			Success: true,
-			Message: "Successfully get all user.",
-			Data: &UserResponse{
-				Email:         user.Email,
-				FirstName:     user.FirstName,
-				LastName:      user.LastName,
-				ContactNumber: user.ContactNumber,
-				CreatedAt:     time.Now().Unix(),
-				UpdatedAt:     time.Now().Unix(),
-			},
-		}
-		response.JSON(w)
+		usersResponse = append(usersResponse, UserResponse{
+			ID:            user.ID,
+			Email:         user.Email,
+			FirstName:     user.FirstName,
+			LastName:      user.LastName,
+			ContactNumber: user.ContactNumber,
+			CreatedAt:     user.CreatedAt.Unix(),
+			UpdatedAt:     user.UpdatedAt.Unix(),
+		})
 	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully get all users.",
+		Data:    usersResponse,
+	}
+	response.JSON(w)
 }
 
 // DeleteUserHandler delete user
@@ -359,14 +373,14 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get from database
-	var users []User
+	// delete in database
+	user := &User{
+		ID: int64(idNum),
+	}
 
 	// prepare statement
 	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
-	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
-		"id": idNum,
-	}, &users)
+	_, err = mysqlDBHandler.Execute(stmt, user)
 	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
@@ -381,7 +395,84 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully delete user data.",
+		Message: "Successfully deleted user data.",
+	}
+
+	response.JSON(w)
+}
+
+// UpdateUserHandler updates a user resource
+func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	var request UpdateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// verify content must not empty
+	if len(request.FirstName) == 0 || len(request.LastName) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "User input cannot be empty.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// insert to database
+	user := &User{
+		ID:            int64(idNum),
+		FirstName:     request.FirstName,
+		LastName:      request.LastName,
+		ContactNumber: request.ContactNumber,
+	}
+
+	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number WHERE id=:id", userTable)
+	_, err = mysqlDBHandler.Execute(stmt, user)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully updated user.",
+		Data: &UserResponse{
+			ID:            user.ID,
+			Email:         user.Email,
+			FirstName:     user.FirstName,
+			LastName:      user.LastName,
+			ContactNumber: user.ContactNumber,
+			UpdatedAt:     time.Now().Unix(),
+		},
 	}
 
 	response.JSON(w)
