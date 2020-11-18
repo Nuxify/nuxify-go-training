@@ -326,30 +326,22 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := &HTTPResponseVM{
-		Status:  http.StatusOK,
-		Success: true,
-		Message: "Successfully get all user.",
-		Data: &UserResponse{
-			Email:         users[0].Email,
-			FirstName:     users[0].FirstName,
-			LastName:      users[0].LastName,
-			ContactNumber: users[0].ContactNumber,
-		},
+	for _, user := range users {
+		response := &HTTPResponseVM{
+			Status:  http.StatusOK,
+			Success: true,
+			Message: "Successfully get all user.",
+			Data: &UserResponse{
+				Email:         user.Email,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				ContactNumber: user.ContactNumber,
+				CreatedAt:     time.Now().Unix(),
+				UpdatedAt:     time.Now().Unix(),
+			},
+		}
+		response.JSON(w)
 	}
-
-	response.JSON(w)
-}
-
-// deleteHandler handle delete function
-func deleteHandler(w http.ResponseWriter, r *http.Request) {
-	response := &HTTPResponseVM{
-		Status:  http.StatusOK,
-		Success: true,
-		Message: "Successfully deleted post data.",
-	}
-
-	response.JSON(w)
 }
 
 // DeleteUserHandler delete user
@@ -370,6 +362,17 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully deleted post data.",
+	}
+
+	response.JSON(w)
+}
+
+// deleteHandler handle delete function
+func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
