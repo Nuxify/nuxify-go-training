@@ -346,11 +346,27 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUserHandler delete user
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// get from database
 	var users []User
 
-	// form the statement
-	stmt := fmt.Sprintf("DELETE %s WHERE id=:id", userTable)
-	_, err := mysqlDBHandler.Execute(stmt, users)
+	// prepare statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
+	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"id": idNum,
+	}, &users)
 	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
@@ -365,7 +381,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully deleted post data.",
+		Message: "Successfully delete user data.",
 	}
 
 	response.JSON(w)
