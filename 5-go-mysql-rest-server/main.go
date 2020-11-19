@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -233,18 +234,17 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// insert to database
-	user := &User{
+	user := User{
 		Email:         request.Email,
 		FirstName:     request.FirstName,
 		LastName:      request.LastName,
 		ContactNumber: request.ContactNumber,
 	}
 
-	stmt := fmt.Sprintf("INSERT INTO %s (email,first_name,last_name,contact_number) VALUES (:email,:first_name,:last_name,:contact_number)", userTable)
-	res, err := mysqlDBHandler.Execute(stmt, user)
+	// insert to database
+	id, err := InsertUserRepository(user)
 	if err != nil {
-		if strings.Contains(err.Error(), "Duplicate entry") {
+		if err.Error() == "DUPLICATE_EMAIL" {
 			response := HTTPResponseVM{
 				Status:  http.StatusConflict,
 				Success: false,
@@ -255,19 +255,6 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		response := HTTPResponseVM{
-			Status:  http.StatusInternalServerError,
-			Success: false,
-			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	}
-
-	// get id
-	id, err := res.LastInsertId()
-	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
@@ -312,27 +299,23 @@ func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get from database
-	var users []User
-
-	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", userTable)
-	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
-		"id": idNum,
-	}, &users)
+	user, err := SelectUserByIDRepository(int64(idNum))
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
 			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	} else if len(users) == 0 {
-		response := HTTPResponseVM{
-			Status:  http.StatusNotFound,
-			Success: false,
-			Message: "Cannot find user.",
 		}
 
 		response.JSON(w)
@@ -344,13 +327,13 @@ func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Message: "Successfully get user.",
 		Data: &UserResponse{
-			ID:            users[0].ID,
-			Email:         users[0].Email,
-			FirstName:     users[0].FirstName,
-			LastName:      users[0].LastName,
-			ContactNumber: users[0].ContactNumber,
-			CreatedAt:     users[0].CreatedAt.Unix(),
-			UpdatedAt:     users[0].UpdatedAt.Unix(),
+			ID:            user.ID,
+			Email:         user.Email,
+			FirstName:     user.FirstName,
+			LastName:      user.LastName,
+			ContactNumber: user.ContactNumber,
+			CreatedAt:     user.CreatedAt.Unix(),
+			UpdatedAt:     user.UpdatedAt.Unix(),
 		},
 	}
 
@@ -1127,6 +1110,47 @@ func DeleteCommenttHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w)
+}
+
+// ============================== Repositories ==============================
+// ============================== users repository ==============================
+
+// InsertUserRepository insert a user data
+func InsertUserRepository(data User) (int64, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (email,first_name,last_name,contact_number) VALUES (:email,:first_name,:last_name,:contact_number)", userTable)
+	res, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return -1, errors.New("DUPLICATE_EMAIL")
+		}
+
+		return -1, errors.New("DATABASE_ERROR")
+	}
+
+	// get id
+	id, err := res.LastInsertId()
+	if err != nil {
+		return -1, errors.New("DATABASE_ERROR")
+	}
+
+	return id, nil
+}
+
+// SelectUserByIDRepository select user data by id
+func SelectUserByIDRepository(ID int64) (User, error) {
+	var users []User
+
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", userTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"id": ID,
+	}, &users)
+	if err != nil {
+		return User{}, errors.New("DATABASE_ERROR")
+	} else if len(users) == 0 {
+		return User{}, errors.New("MISSING_RECORD")
+	}
+
+	return users[0], nil
 }
 
 // ============================== MySQL Helper ==============================
