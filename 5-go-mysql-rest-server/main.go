@@ -34,6 +34,15 @@ type User struct {
 	UpdatedAt     time.Time `db:"updated_at"`
 }
 
+// Post data struct for post table
+type Post struct {
+	ID        int64
+	AuthorID  int64 `db:"author_id"`
+	Content   string
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 var (
 	mysqlDBHandler *MySQLDBHandler
 	userTable      string = "users"
@@ -78,36 +87,24 @@ type UserResponse struct {
 	UpdatedAt     int64  `json:"updatedAt"`
 }
 
-// PostRequest use for post request
-type PostRequest struct {
-	AuthorID int    `json:"authorId"`
+// CreatePostRequest use for post request
+type CreatePostRequest struct {
+	AuthorID int64  `json:"authorId"`
 	Content  string `json:"content"`
+}
+
+// UpdatePostRequest use for post request
+type UpdatePostRequest struct {
+	Content string `json:"content"`
 }
 
 // PostResponse use for post response
 type PostResponse struct {
-	ID        int    `json:"id"`
-	AuthorID  int    `json:"authorId"`
+	ID        int64  `json:"id"`
+	AuthorID  int64  `json:"authorId"`
 	Content   string `json:"content"`
-	Timestamp int64  `json:"timestamp"`
-}
-
-// PatchRequest use for post request
-type PatchRequest struct {
-	Content string `json:"content"`
-}
-
-// PatchResponse use for post response
-type PatchResponse struct {
-	Content   string `json:"content"`
-	Timestamp int64  `json:"timestamp"`
-}
-
-// StudentInformationResponse use for response student info
-type StudentInformationResponse struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	School string `json:"school"`
+	CreatedAt int64  `json:"createdAt"`
+	UpdatedAt int64  `json:"updatedAt"`
 }
 
 func main() {
@@ -118,7 +115,7 @@ func main() {
 	mysqlDBHandler = &MySQLDBHandler{}
 
 	// connect to database
-	err := mysqlDBHandler.Connect("127.0.0.1", "3306", "nuxify_db_training", "root", "123")
+	err := mysqlDBHandler.Connect("127.0.0.1", "3306", "nuxify_training", "root", "1234")
 	if err != nil {
 		panic(err)
 	}
@@ -134,13 +131,13 @@ func main() {
 
 	router.Route("/api", func(router chi.Router) {
 		router.Route("/post", func(router chi.Router) {
-			router.Post("/", postHandler)
-			router.Get("/{id}", getByIDHandler)
-			router.Patch("/{id}", patchHandler)
-			router.Delete("/{id}", deleteHandler)
+			router.Post("/", CreatePostHandler)
+			router.Get("/{id}", GetPostByIDHandler)
+			router.Patch("/{id}", UpdatePostHandler)
+			router.Delete("/{id}", DeletePostHandler)
 		})
 
-		router.Get("/posts", getAllHandler)
+		router.Get("/posts", GetAllPostsHandler)
 
 		router.Route("/user", func(router chi.Router) {
 			router.Post("/", InsertUserHandler)
@@ -157,6 +154,7 @@ func main() {
 }
 
 // ============================== HTTP methods ==============================
+// ============================== Users handler ==============================
 
 // InsertUserHandler creates a new user resource
 func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -478,51 +476,84 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// deleteHandler handle delete function
-func deleteHandler(w http.ResponseWriter, r *http.Request) {
+// ============================== Posts handler ==============================
+
+// CreatePostHandler handle create function
+func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
+	var request CreatePostRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// verify content must not empty
+	if len(request.Content) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Post input cannot be empty.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// insert to database
+	post := &Post{
+		AuthorID: request.AuthorID,
+		Content:  request.Content,
+	}
+
+	stmt := fmt.Sprintf("INSERT INTO %s (author_id, content) VALUES (:author_id, :content)", postTable)
+	res, err := mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// get id
+	id, err := res.LastInsertId()
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully deleted post data.",
+		Message: "Successfully created post.",
+		Data: &PostResponse{
+			ID:        id,
+			AuthorID:  post.AuthorID,
+			Content:   post.Content,
+			CreatedAt: time.Now().Unix(),
+			UpdatedAt: time.Now().Unix(),
+		},
 	}
 
 	response.JSON(w)
 }
 
-// getAllHandler handle getall function
-func getAllHandler(w http.ResponseWriter, r *http.Request) {
-	var students []StudentInformationResponse
-
-	students = append(students, StudentInformationResponse{
-		ID:     123,
-		Name:   "Loed",
-		School: "HCDC",
-	})
-
-	students = append(students, StudentInformationResponse{
-		ID:     124,
-		Name:   "Karl",
-		School: "HCDC",
-	})
-
-	students = append(students, StudentInformationResponse{
-		ID:     125,
-		Name:   "GarzAlma",
-		School: "HCDC",
-	})
-
-	response := &HTTPResponseVM{
-		Status:  http.StatusOK,
-		Success: true,
-		Message: "Successfully fetched posts data.",
-		Data:    students,
-	}
-
-	response.JSON(w)
-}
-
-// getByIDHandler handle get by id function
-func getByIDHandler(w http.ResponseWriter, r *http.Request) {
+// GetPostByIDHandler get post by id
+func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	idNum, err := strconv.Atoi(id)
 	if err != nil {
@@ -536,25 +567,56 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get from database
+	var posts []Post
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", postTable)
+	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"id": idNum,
+	}, &posts)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	} else if len(posts) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusNotFound,
+			Success: false,
+			Message: "Cannot find post.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully fetched post data.",
-		Data: &StudentInformationResponse{
-			ID:     idNum,
-			Name:   "Karl",
-			School: "HCDC",
+		Message: "Successfully get post.",
+		Data: &PostResponse{
+			ID:        posts[0].ID,
+			AuthorID:  posts[0].AuthorID,
+			Content:   posts[0].Content,
+			CreatedAt: posts[0].CreatedAt.Unix(),
+			UpdatedAt: posts[0].UpdatedAt.Unix(),
 		},
 	}
 
 	response.JSON(w)
 }
 
-// patchHandler handle update function
-func patchHandler(w http.ResponseWriter, r *http.Request) {
-	var request PatchRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		response := HTTPResponseVM{
+// DeletePostHandler delete user
+func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
 			Success: false,
 			Message: "Invalid payload sent.",
@@ -564,12 +626,19 @@ func patchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// verify vontent must not empty
-	if len(strings.TrimSpace(request.Content)) == 0 {
+	// delete in database
+	post := &Post{
+		ID: int64(idNum),
+	}
+
+	// prepare statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", postTable)
+	_, err = mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
 		response := HTTPResponseVM{
-			Status:  http.StatusUnprocessableEntity,
+			Status:  http.StatusInternalServerError,
 			Success: false,
-			Message: "Content cannot be empty.",
+			Message: err.Error(),
 		}
 
 		response.JSON(w)
@@ -579,19 +648,76 @@ func patchHandler(w http.ResponseWriter, r *http.Request) {
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully updated post.",
-		Data: &PatchResponse{
-			Content:   request.Content,
-			Timestamp: time.Now().Unix(),
-		},
+		Message: "Successfully deleted user data.",
 	}
 
 	response.JSON(w)
 }
 
-// postHandler handle create function
-func postHandler(w http.ResponseWriter, r *http.Request) {
-	var request PostRequest
+// GetAllPostsHandler get all users
+func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
+	var posts []Post
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s", postTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &posts)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	} else if len(posts) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusNotFound,
+			Success: false,
+			Message: "No posts found.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	var postsResponse []PostResponse
+
+	for _, post := range posts {
+		postsResponse = append(postsResponse, PostResponse{
+			ID:        post.ID,
+			AuthorID:  post.AuthorID,
+			Content:   post.Content,
+			CreatedAt: post.CreatedAt.Unix(),
+			UpdatedAt: post.UpdatedAt.Unix(),
+		})
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully get all posts.",
+		Data:    postsResponse,
+	}
+	response.JSON(w)
+}
+
+// UpdatePostHandler updates a user resource
+func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	var request UpdatePostRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
@@ -604,11 +730,30 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// verify content must not empty
-	if len(strings.TrimSpace(request.Content)) == 0 {
+	if len(request.Content) == 0 {
 		response := HTTPResponseVM{
 			Status:  http.StatusUnprocessableEntity,
 			Success: false,
-			Message: "Content cannot be empty.",
+			Message: "User input cannot be empty.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// insert to database
+	post := &Post{
+		ID:      int64(idNum),
+		Content: request.Content,
+	}
+
+	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", postTable)
+	_, err = mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
 		}
 
 		response.JSON(w)
@@ -618,12 +763,12 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully created post.",
+		Message: "Successfully updated user.",
 		Data: &PostResponse{
-			ID:        1,
-			AuthorID:  request.AuthorID,
-			Content:   request.Content,
-			Timestamp: time.Now().Unix(),
+			ID:        post.ID,
+			AuthorID:  post.AuthorID,
+			Content:   post.Content,
+			UpdatedAt: time.Now().Unix(),
 		},
 	}
 
