@@ -43,6 +43,16 @@ type Post struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+// Comment data struct for post table
+type Comment struct {
+	ID        int64
+	PostID    int64 `db:"post_id"`
+	AuthorID  int64 `db:"author_id"`
+	Content   string
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 var (
 	mysqlDBHandler *MySQLDBHandler
 	userTable      string = "users"
@@ -61,6 +71,19 @@ type HTTPResponseVM struct {
 	Data      interface{} `json:"data"`
 }
 
+// ============================== User HTTP variables ==============================
+
+// UserResponse data struct for user response
+type UserResponse struct {
+	ID            int64  `json:"id"`
+	Email         string `json:"email"`
+	FirstName     string `json:"firstName"`
+	LastName      string `json:"lastName"`
+	ContactNumber string `json:"contactNumber"`
+	CreatedAt     int64  `json:"createdAt"`
+	UpdatedAt     int64  `json:"updatedAt"`
+}
+
 // CreateUserRequest data struct for create user request
 type CreateUserRequest struct {
 	Email         string `json:"email"`
@@ -76,15 +99,15 @@ type UpdateUserRequest struct {
 	ContactNumber string `json:"contactNumber"`
 }
 
-// UserResponse data struct for user response
-type UserResponse struct {
-	ID            int64  `json:"id"`
-	Email         string `json:"email"`
-	FirstName     string `json:"firstName"`
-	LastName      string `json:"lastName"`
-	ContactNumber string `json:"contactNumber"`
-	CreatedAt     int64  `json:"createdAt"`
-	UpdatedAt     int64  `json:"updatedAt"`
+// ============================== Post HTTP variables ==============================
+
+// PostResponse use for post response
+type PostResponse struct {
+	ID        int64  `json:"id"`
+	AuthorID  int64  `json:"authorId"`
+	Content   string `json:"content"`
+	CreatedAt int64  `json:"createdAt"`
+	UpdatedAt int64  `json:"updatedAt"`
 }
 
 // CreatePostRequest use for post request
@@ -98,15 +121,31 @@ type UpdatePostRequest struct {
 	Content string `json:"content"`
 }
 
-// PostResponse use for post response
-type PostResponse struct {
+// ============================== Comment HTTP variables ==============================
+
+// CommentResponse use for post response
+type CommentResponse struct {
 	ID        int64  `json:"id"`
+	PostID    int64  `json:"postId"`
 	AuthorID  int64  `json:"authorId"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`
 	UpdatedAt int64  `json:"updatedAt"`
 }
 
+// CreateCommentRequest use for post request
+type CreateCommentRequest struct {
+	PostID   int64  `json:"postId"`
+	AuthorID int64  `json:"authorId"`
+	Content  string `json:"content"`
+}
+
+// UpdateCommentRequest use for post request
+type UpdateCommentRequest struct {
+	Content string `json:"content"`
+}
+
+// initialize main function
 func main() {
 	port := ":8080"
 	fmt.Println("Starting Server....")
@@ -130,6 +169,17 @@ func main() {
 	router.Use(middleware.Recoverer)
 
 	router.Route("/api", func(router chi.Router) {
+		// routes for user
+		router.Route("/user", func(router chi.Router) {
+			router.Post("/", CreateUserHandler)
+			router.Get("/{id}", GetUserByIDHandler)
+			router.Patch("/{id}", UpdateUserHandler)
+			router.Delete("/{id}", DeleteUserHandler)
+		})
+
+		router.Get("/users", GetAllUsersHandler)
+
+		// routes for post
 		router.Route("/post", func(router chi.Router) {
 			router.Post("/", CreatePostHandler)
 			router.Get("/{id}", GetPostByIDHandler)
@@ -139,14 +189,15 @@ func main() {
 
 		router.Get("/posts", GetAllPostsHandler)
 
-		router.Route("/user", func(router chi.Router) {
-			router.Post("/", InsertUserHandler)
-			router.Get("/{id}", GetUserByIDHandler)
-			router.Patch("/{id}", UpdateUserHandler)
-			router.Delete("/{id}", DeleteUserHandler)
+		// routes for comment
+		router.Route("/comment", func(router chi.Router) {
+			router.Post("/", CreateCommentHandler)
+			router.Get("/{id}", GetCommentByIDHandler)
+			router.Patch("/{id}", UpdateCommentHandler)
+			router.Delete("/{id}", DeleteCommenttHandler)
 		})
 
-		router.Get("/users", GetAllUsersHandler)
+		router.Get("/comments", GetAllCommentsHandler)
 	})
 
 	fmt.Println("Server is listening on " + port)
@@ -154,10 +205,10 @@ func main() {
 }
 
 // ============================== HTTP methods ==============================
-// ============================== Users handler ==============================
+// ============================== users handler ==============================
 
-// InsertUserHandler creates a new user resource
-func InsertUserHandler(w http.ResponseWriter, r *http.Request) {
+// CreateUserHandler creates a new user resource
+func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var request CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		response := HTTPResponseVM{
@@ -356,49 +407,6 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// DeleteUserHandler delete user
-func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	idNum, err := strconv.Atoi(id)
-	if err != nil {
-		response := &HTTPResponseVM{
-			Status:  http.StatusUnprocessableEntity,
-			Success: false,
-			Message: "Invalid payload sent.",
-		}
-
-		response.JSON(w)
-		return
-	}
-
-	// delete in database
-	user := &User{
-		ID: int64(idNum),
-	}
-
-	// prepare statement
-	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
-	_, err = mysqlDBHandler.Execute(stmt, user)
-	if err != nil {
-		response := HTTPResponseVM{
-			Status:  http.StatusInternalServerError,
-			Success: false,
-			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	}
-
-	response := &HTTPResponseVM{
-		Status:  http.StatusOK,
-		Success: true,
-		Message: "Successfully deleted user data.",
-	}
-
-	response.JSON(w)
-}
-
 // UpdateUserHandler updates a user resource
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
@@ -476,7 +484,50 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// ============================== Posts handler ==============================
+// DeleteUserHandler delete user
+func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// delete in database
+	user := &User{
+		ID: int64(idNum),
+	}
+
+	// prepare statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
+	_, err = mysqlDBHandler.Execute(stmt, user)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully deleted user data.",
+	}
+
+	response.JSON(w)
+}
+
+// ============================== posts handler ==============================
 
 // CreatePostHandler handle create function
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -611,49 +662,6 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w)
 }
 
-// DeletePostHandler delete user
-func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	idNum, err := strconv.Atoi(id)
-	if err != nil {
-		response := &HTTPResponseVM{
-			Status:  http.StatusUnprocessableEntity,
-			Success: false,
-			Message: "Invalid payload sent.",
-		}
-
-		response.JSON(w)
-		return
-	}
-
-	// delete in database
-	post := &Post{
-		ID: int64(idNum),
-	}
-
-	// prepare statement
-	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", postTable)
-	_, err = mysqlDBHandler.Execute(stmt, post)
-	if err != nil {
-		response := HTTPResponseVM{
-			Status:  http.StatusInternalServerError,
-			Success: false,
-			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	}
-
-	response := &HTTPResponseVM{
-		Status:  http.StatusOK,
-		Success: true,
-		Message: "Successfully deleted user data.",
-	}
-
-	response.JSON(w)
-}
-
 // GetAllPostsHandler get all users
 func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
@@ -770,6 +778,352 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 			Content:   post.Content,
 			UpdatedAt: time.Now().Unix(),
 		},
+	}
+
+	response.JSON(w)
+}
+
+// DeletePostHandler delete user
+func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// delete in database
+	post := &Post{
+		ID: int64(idNum),
+	}
+
+	// prepare statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", postTable)
+	_, err = mysqlDBHandler.Execute(stmt, post)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully deleted user data.",
+	}
+
+	response.JSON(w)
+}
+
+// ============================== comment handler ==============================
+
+// CreateCommentHandler handle create function
+func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
+	var request CreateCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// verify content must not empty
+	if len(request.Content) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Comment input cannot be empty.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// insert to database
+	comment := &Comment{
+		PostID:   request.PostID,
+		AuthorID: request.AuthorID,
+		Content:  request.Content,
+	}
+
+	stmt := fmt.Sprintf("INSERT INTO %s (post_id, author_id, content) VALUES (:post_id, :author_id, :content)", commentTable)
+	res, err := mysqlDBHandler.Execute(stmt, comment)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// get id
+	id, err := res.LastInsertId()
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully posted comment.",
+		Data: &CommentResponse{
+			ID:        id,
+			PostID:    comment.PostID,
+			AuthorID:  comment.AuthorID,
+			Content:   comment.Content,
+			CreatedAt: time.Now().Unix(),
+			UpdatedAt: time.Now().Unix(),
+		},
+	}
+
+	response.JSON(w)
+}
+
+// GetCommentByIDHandler get post by id
+func GetCommentByIDHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// get from database
+	var comments []Comment
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", commentTable)
+	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"id": idNum,
+	}, &comments)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	} else if len(comments) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusNotFound,
+			Success: false,
+			Message: "Cannot find comment.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully get comment.",
+		Data: &PostResponse{
+			ID:        comments[0].ID,
+			AuthorID:  comments[0].AuthorID,
+			Content:   comments[0].Content,
+			CreatedAt: comments[0].CreatedAt.Unix(),
+			UpdatedAt: comments[0].UpdatedAt.Unix(),
+		},
+	}
+
+	response.JSON(w)
+}
+
+// GetAllCommentsHandler get all users
+func GetAllCommentsHandler(w http.ResponseWriter, r *http.Request) {
+	var comments []Comment
+
+	// prepare statement
+	stmt := fmt.Sprintf("SELECT * FROM %s", commentTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &comments)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	} else if len(comments) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusNotFound,
+			Success: false,
+			Message: "No comments found.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	var commentResponse []CommentResponse
+
+	for _, comment := range comments {
+		commentResponse = append(commentResponse, CommentResponse{
+			ID:        comment.ID,
+			PostID:    comment.PostID,
+			AuthorID:  comment.AuthorID,
+			Content:   comment.Content,
+			CreatedAt: comment.CreatedAt.Unix(),
+			UpdatedAt: comment.UpdatedAt.Unix(),
+		})
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully get all comments.",
+		Data:    commentResponse,
+	}
+	response.JSON(w)
+}
+
+// UpdateCommentHandler updates a user resource
+func UpdateCommentHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	var request UpdateCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// verify content must not empty
+	if len(request.Content) == 0 {
+		response := HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Comment input cannot be empty.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// insert to database
+	comment := &Comment{
+		ID:      int64(idNum),
+		Content: request.Content,
+	}
+
+	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", commentTable)
+	_, err = mysqlDBHandler.Execute(stmt, comment)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully updated comment.",
+		Data: &CommentResponse{
+			ID:        comment.ID,
+			PostID:    comment.PostID,
+			AuthorID:  comment.AuthorID,
+			Content:   comment.Content,
+			UpdatedAt: time.Now().Unix(),
+		},
+	}
+
+	response.JSON(w)
+}
+
+// DeleteCommenttHandler delete user
+func DeleteCommenttHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	idNum, err := strconv.Atoi(id)
+	if err != nil {
+		response := &HTTPResponseVM{
+			Status:  http.StatusUnprocessableEntity,
+			Success: false,
+			Message: "Invalid payload sent.",
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	// delete in database
+	comment := &Comment{
+		ID: int64(idNum),
+	}
+
+	// prepare statement
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", commentTable)
+	_, err = mysqlDBHandler.Execute(stmt, comment)
+	if err != nil {
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
+	response := &HTTPResponseVM{
+		Status:  http.StatusOK,
+		Success: true,
+		Message: "Successfully deleted comment data.",
 	}
 
 	response.JSON(w)
