@@ -342,25 +342,25 @@ func GetUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetAllUsersHandler get all users
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
-	var users []User
 
-	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s", userTable)
-	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &users)
+	// get from database
+	users, err := SelectUsersRepository()
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
 			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	} else if len(users) == 0 {
-		response := HTTPResponseVM{
-			Status:  http.StatusNotFound,
-			Success: false,
-			Message: "No users found.",
 		}
 
 		response.JSON(w)
@@ -1154,7 +1154,7 @@ func SelectUserByIDRepository(ID int64) (User, error) {
 }
 
 // SelectUsersRepository select all user data
-func SelectUsersRepository(data User) ([]User, error) {
+func SelectUsersRepository() ([]User, error) {
 	var users []User
 	stmt := fmt.Sprintf("SELECT * FROM %s", userTable)
 	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &users)
