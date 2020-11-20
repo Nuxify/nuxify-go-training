@@ -1167,6 +1167,33 @@ func SelectUsersRepository() ([]User, error) {
 	return users, nil
 }
 
+// UpdateUserRepository update user data
+// func UpdateUserRepository(data User) (int64, error) {
+
+// 	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number WHERE id=:id", userTable)
+// 	res, err := mysqlDBHandler.Execute(stmt, data)
+// 	if err != nil {
+// 		if strings.Contains(err.Error(), "Duplicate entry") {
+// 			return -1, errors.New("DUPLICATE_EMAIL")
+// 		}
+
+// 		return -1, errors.New("DATABASE_ERROR")
+// 	}
+
+// 	return user, nil
+// }
+
+// DeleteUserRepository update user data
+func DeleteUserRepository(data User) error {
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
+	_, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		return errors.New("DATABASE_ERROR")
+	}
+
+	return err
+}
+
 // ============================== MySQL Helper ==============================
 
 // Connect opens a new connection to the mysql interface
