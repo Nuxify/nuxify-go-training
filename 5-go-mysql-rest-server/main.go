@@ -430,16 +430,26 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert to database
-	user := &User{
+	user := User{
 		ID:            int64(idNum),
 		FirstName:     request.FirstName,
 		LastName:      request.LastName,
 		ContactNumber: request.ContactNumber,
 	}
 
-	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number WHERE id=:id", userTable)
-	_, err = mysqlDBHandler.Execute(stmt, user)
+	_, err = UpdateUserRepository(user)
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
@@ -483,13 +493,12 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete in database
-	user := &User{
+	user := User{
 		ID: int64(idNum),
 	}
 
 	// prepare statement
-	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
-	_, err = mysqlDBHandler.Execute(stmt, user)
+	err = DeleteUserRepository(user)
 	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
@@ -539,26 +548,12 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert to database
-	post := &Post{
+	post := Post{
 		AuthorID: request.AuthorID,
 		Content:  request.Content,
 	}
 
-	stmt := fmt.Sprintf("INSERT INTO %s (author_id, content) VALUES (:author_id, :content)", postTable)
-	res, err := mysqlDBHandler.Execute(stmt, post)
-	if err != nil {
-		response := HTTPResponseVM{
-			Status:  http.StatusInternalServerError,
-			Success: false,
-			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	}
-
-	// get id
-	id, err := res.LastInsertId()
+	id, err := InsertPostRepository(post)
 	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
@@ -601,28 +596,24 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get from database
-	var posts []Post
-
 	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", postTable)
-	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
-		"id": idNum,
-	}, &posts)
+	posts, err := SelectPostByIDRepository(int64(idNum))
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
 			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	} else if len(posts) == 0 {
-		response := HTTPResponseVM{
-			Status:  http.StatusNotFound,
-			Success: false,
-			Message: "Cannot find post.",
 		}
 
 		response.JSON(w)
@@ -634,11 +625,11 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Message: "Successfully get post.",
 		Data: &PostResponse{
-			ID:        posts[0].ID,
-			AuthorID:  posts[0].AuthorID,
-			Content:   posts[0].Content,
-			CreatedAt: posts[0].CreatedAt.Unix(),
-			UpdatedAt: posts[0].UpdatedAt.Unix(),
+			ID:        posts.ID,
+			AuthorID:  posts.AuthorID,
+			Content:   posts.Content,
+			CreatedAt: posts.CreatedAt.Unix(),
+			UpdatedAt: posts.UpdatedAt.Unix(),
 		},
 	}
 
@@ -647,25 +638,23 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetAllPostsHandler get all users
 func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
-	var posts []Post
-
-	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s", postTable)
-	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &posts)
+	posts, err := SelectPostsRepository()
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find posts.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
 			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	} else if len(posts) == 0 {
-		response := HTTPResponseVM{
-			Status:  http.StatusNotFound,
-			Success: false,
-			Message: "No posts found.",
 		}
 
 		response.JSON(w)
@@ -733,14 +722,24 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert to database
-	post := &Post{
+	post := Post{
 		ID:      int64(idNum),
 		Content: request.Content,
 	}
 
-	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", postTable)
-	_, err = mysqlDBHandler.Execute(stmt, post)
+	_, err = UpdatePostRepository(post)
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find post.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
@@ -782,13 +781,11 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete in database
-	post := &Post{
+	post := Post{
 		ID: int64(idNum),
 	}
 
-	// prepare statement
-	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", postTable)
-	_, err = mysqlDBHandler.Execute(stmt, post)
+	err = DeletePostRepository(post)
 	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
@@ -803,7 +800,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully deleted user data.",
+		Message: "Successfully deleted post data.",
 	}
 
 	response.JSON(w)
@@ -838,28 +835,25 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert to database
-	comment := &Comment{
+	comment := Comment{
 		PostID:   request.PostID,
 		AuthorID: request.AuthorID,
 		Content:  request.Content,
 	}
 
-	stmt := fmt.Sprintf("INSERT INTO %s (post_id, author_id, content) VALUES (:post_id, :author_id, :content)", commentTable)
-	res, err := mysqlDBHandler.Execute(stmt, comment)
+	id, err := InsertCommentRepository(comment)
 	if err != nil {
-		response := HTTPResponseVM{
-			Status:  http.StatusInternalServerError,
-			Success: false,
-			Message: err.Error(),
+		if err.Error() == "DUPLICATE_EMAIL" {
+			response := HTTPResponseVM{
+				Status:  http.StatusConflict,
+				Success: false,
+				Message: "Duplicate email.",
+			}
+
+			response.JSON(w)
+			return
 		}
 
-		response.JSON(w)
-		return
-	}
-
-	// get id
-	id, err := res.LastInsertId()
-	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
@@ -903,27 +897,23 @@ func GetCommentByIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get from database
-	var comments []Comment
-
-	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", commentTable)
-	err = mysqlDBHandler.Query(stmt, map[string]interface{}{
-		"id": idNum,
-	}, &comments)
+	comment, err := SelectCommentByIDRepository(int64(idNum))
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
 			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	} else if len(comments) == 0 {
-		response := HTTPResponseVM{
-			Status:  http.StatusNotFound,
-			Success: false,
-			Message: "Cannot find comment.",
 		}
 
 		response.JSON(w)
@@ -934,12 +924,13 @@ func GetCommentByIDHandler(w http.ResponseWriter, r *http.Request) {
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully get comment.",
-		Data: &PostResponse{
-			ID:        comments[0].ID,
-			AuthorID:  comments[0].AuthorID,
-			Content:   comments[0].Content,
-			CreatedAt: comments[0].CreatedAt.Unix(),
-			UpdatedAt: comments[0].UpdatedAt.Unix(),
+		Data: &CommentResponse{
+			ID:        comment.ID,
+			PostID:    comment.PostID,
+			AuthorID:  comment.AuthorID,
+			Content:   comment.Content,
+			CreatedAt: comment.CreatedAt.Unix(),
+			UpdatedAt: comment.UpdatedAt.Unix(),
 		},
 	}
 
@@ -948,25 +939,24 @@ func GetCommentByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetAllCommentsHandler get all users
 func GetAllCommentsHandler(w http.ResponseWriter, r *http.Request) {
-	var comments []Comment
-
-	// prepare statement
-	stmt := fmt.Sprintf("SELECT * FROM %s", commentTable)
-	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &comments)
+	// get from database
+	comments, err := SelectCommentsRepository()
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find posts.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
 			Message: err.Error(),
-		}
-
-		response.JSON(w)
-		return
-	} else if len(comments) == 0 {
-		response := HTTPResponseVM{
-			Status:  http.StatusNotFound,
-			Success: false,
-			Message: "No comments found.",
 		}
 
 		response.JSON(w)
@@ -1035,14 +1025,24 @@ func UpdateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert to database
-	comment := &Comment{
+	comment := Comment{
 		ID:      int64(idNum),
 		Content: request.Content,
 	}
 
-	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", commentTable)
-	_, err = mysqlDBHandler.Execute(stmt, comment)
+	_, err = UpdateCommentRepository(comment)
 	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find posts.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
 			Success: false,
@@ -1085,13 +1085,12 @@ func DeleteCommenttHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete in database
-	comment := &Comment{
+	comment := Comment{
 		ID: int64(idNum),
 	}
 
 	// prepare statement
-	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", commentTable)
-	_, err = mysqlDBHandler.Execute(stmt, comment)
+	err = DeleteCommentRepository(comment)
 	if err != nil {
 		response := HTTPResponseVM{
 			Status:  http.StatusInternalServerError,
@@ -1168,24 +1167,183 @@ func SelectUsersRepository() ([]User, error) {
 }
 
 // UpdateUserRepository update user data
-// func UpdateUserRepository(data User) (int64, error) {
+func UpdateUserRepository(data User) (User, error) {
+	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number WHERE id=:id", userTable)
+	_, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		return User{}, errors.New("DATABASE_ERROR")
+	}
 
-// 	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number WHERE id=:id", userTable)
-// 	res, err := mysqlDBHandler.Execute(stmt, data)
-// 	if err != nil {
-// 		if strings.Contains(err.Error(), "Duplicate entry") {
-// 			return -1, errors.New("DUPLICATE_EMAIL")
-// 		}
+	user := User{
+		ID: data.ID,
+	}
 
-// 		return -1, errors.New("DATABASE_ERROR")
-// 	}
-
-// 	return user, nil
-// }
+	return user, err
+}
 
 // DeleteUserRepository update user data
 func DeleteUserRepository(data User) error {
 	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", userTable)
+	_, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		return errors.New("DATABASE_ERROR")
+	}
+
+	return err
+}
+
+// ============================== post repository ==============================
+
+// InsertPostRepository insert a user data
+func InsertPostRepository(data Post) (int64, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (author_id, content) VALUES (:author_id, :content)", postTable)
+	res, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return -1, errors.New("DUPLICATE_EMAIL")
+		}
+
+		return -1, errors.New("DATABASE_ERROR")
+	}
+
+	// get id
+	id, err := res.LastInsertId()
+	if err != nil {
+		return -1, errors.New("DATABASE_ERROR")
+	}
+
+	return id, nil
+}
+
+// SelectPostByIDRepository select post data by id
+func SelectPostByIDRepository(ID int64) (Post, error) {
+	var posts []Post
+
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", postTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"id": ID,
+	}, &posts)
+	if err != nil {
+		return Post{}, errors.New("DATABASE_ERROR")
+	} else if len(posts) == 0 {
+		return Post{}, errors.New("MISSING_RECORD")
+	}
+
+	return posts[0], nil
+}
+
+// SelectPostsRepository select all user data
+func SelectPostsRepository() ([]Post, error) {
+	var posts []Post
+	stmt := fmt.Sprintf("SELECT * FROM %s", postTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &posts)
+	if err != nil {
+		return posts, errors.New("DATABASE_ERROR")
+	} else if len(posts) == 0 {
+		return posts, errors.New("MISSING_RECORD")
+	}
+
+	return posts, nil
+}
+
+// UpdatePostRepository update user data
+func UpdatePostRepository(data Post) (Post, error) {
+	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number WHERE id=:id", postTable)
+	_, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		return Post{}, errors.New("DATABASE_ERROR")
+	}
+
+	post := Post{
+		ID: data.ID,
+	}
+
+	return post, err
+}
+
+// DeletePostRepository update user data
+func DeletePostRepository(data Post) error {
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", postTable)
+	_, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		return errors.New("DATABASE_ERROR")
+	}
+
+	return err
+}
+
+// ============================== post repository ==============================
+
+// InsertCommentRepository insert a user data
+func InsertCommentRepository(data Comment) (int64, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (post_id, author_id, content) VALUES (:post_id, :author_id, :content)", commentTable)
+	res, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return -1, errors.New("DUPLICATE_EMAIL")
+		}
+
+		return -1, errors.New("DATABASE_ERROR")
+	}
+
+	// get id
+	id, err := res.LastInsertId()
+	if err != nil {
+		return -1, errors.New("DATABASE_ERROR")
+	}
+
+	return id, nil
+}
+
+// SelectCommentByIDRepository select post data by id
+func SelectCommentByIDRepository(ID int64) (Comment, error) {
+	var comments []Comment
+
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id=:id", commentTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{
+		"id": ID,
+	}, &comments)
+	if err != nil {
+		return Comment{}, errors.New("DATABASE_ERROR")
+	} else if len(comments) == 0 {
+		return Comment{}, errors.New("MISSING_RECORD")
+	}
+
+	return comments[0], nil
+}
+
+// SelectCommentsRepository select all user data
+func SelectCommentsRepository() ([]Comment, error) {
+	var comments []Comment
+	stmt := fmt.Sprintf("SELECT * FROM %s", commentTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &comments)
+	if err != nil {
+		return comments, errors.New("DATABASE_ERROR")
+	} else if len(comments) == 0 {
+		return comments, errors.New("MISSING_RECORD")
+	}
+
+	return comments, nil
+}
+
+// UpdateCommentRepository update user data
+func UpdateCommentRepository(data Comment) (Comment, error) {
+	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", commentTable)
+	_, err := mysqlDBHandler.Execute(stmt, data)
+	if err != nil {
+		return Comment{}, errors.New("DATABASE_ERROR")
+	}
+
+	comment := Comment{
+		ID: data.ID,
+	}
+
+	return comment, err
+}
+
+// DeleteCommentRepository update user data
+func DeleteCommentRepository(data Comment) error {
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", commentTable)
 	_, err := mysqlDBHandler.Execute(stmt, data)
 	if err != nil {
 		return errors.New("DATABASE_ERROR")
