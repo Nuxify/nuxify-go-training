@@ -1153,6 +1153,20 @@ func SelectUserByIDRepository(ID int64) (User, error) {
 	return users[0], nil
 }
 
+// SelectUsersRepository select all user data
+func SelectUsersRepository(data User) ([]User, error) {
+	var users []User
+	stmt := fmt.Sprintf("SELECT * FROM %s", userTable)
+	err := mysqlDBHandler.Query(stmt, map[string]interface{}{}, &users)
+	if err != nil {
+		return users, errors.New("DATABASE_ERROR")
+	} else if len(users) == 0 {
+		return users, errors.New("MISSING_RECORD")
+	}
+
+	return users, nil
+}
+
 // ============================== MySQL Helper ==============================
 
 // Connect opens a new connection to the mysql interface
