@@ -1272,7 +1272,7 @@ func DeletePostRepository(data Post) error {
 	return err
 }
 
-// ============================== post repository ==============================
+// ============================== comment repository ==============================
 
 // InsertCommentRepository insert a user data
 func InsertCommentRepository(data Comment) (int64, error) {
