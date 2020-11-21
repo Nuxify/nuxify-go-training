@@ -597,7 +597,7 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prepare statement
-	posts, err := SelectPostByIDRepository(int64(idNum))
+	post, err := SelectPostByIDRepository(int64(idNum))
 	if err != nil {
 		if err.Error() == "MISSING_RECORD" {
 			response := HTTPResponseVM{
@@ -625,11 +625,11 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Message: "Successfully get post.",
 		Data: &PostResponse{
-			ID:        posts.ID,
-			AuthorID:  posts.AuthorID,
-			Content:   posts.Content,
-			CreatedAt: posts.CreatedAt.Unix(),
-			UpdatedAt: posts.UpdatedAt.Unix(),
+			ID:        post.ID,
+			AuthorID:  post.AuthorID,
+			Content:   post.Content,
+			CreatedAt: post.CreatedAt.Unix(),
+			UpdatedAt: post.UpdatedAt.Unix(),
 		},
 	}
 
@@ -721,7 +721,7 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// insert to database
+	// update to database
 	post := Post{
 		ID:      int64(idNum),
 		Content: request.Content,
