@@ -603,7 +603,7 @@ func GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 			response := HTTPResponseVM{
 				Status:  http.StatusNotFound,
 				Success: false,
-				Message: "Cannot find user.",
+				Message: "Cannot find post.",
 			}
 
 			response.JSON(w)
