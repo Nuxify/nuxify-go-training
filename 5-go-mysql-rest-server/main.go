@@ -58,7 +58,7 @@ var (
 	mysqlDBHandler *MySQLDBHandler
 	userTable      string = "users"
 	postTable      string = "posts"
-	commentTable   string = "comments"
+	commentTable   string = "comment"
 )
 
 // ============================== HTTP variables ==============================
@@ -130,7 +130,8 @@ type CreatePostRequest struct {
 
 // UpdatePostRequest use for post request
 type UpdatePostRequest struct {
-	Content string `json:"content"`
+	AuthorID int64  `json:"authorId"`
+	Content  string `json:"content"`
 }
 
 // ============================== Comment HTTP variables ==============================
@@ -154,7 +155,8 @@ type CreateCommentRequest struct {
 
 // UpdateCommentRequest use for post request
 type UpdateCommentRequest struct {
-	Content string `json:"content"`
+	AuthorID int64  `json:"authorId"`
+	Content  string `json:"content"`
 }
 
 // initialize main function
@@ -740,8 +742,40 @@ func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 	var postsResponse []PostResponse
 
 	for _, post := range posts {
+		// get author details
+		user, err := SelectUserByIDRepository(post.AuthorID)
+		if err != nil {
+			if err.Error() == "MISSING_RECORD" {
+				response := HTTPResponseVM{
+					Status:  http.StatusNotFound,
+					Success: false,
+					Message: "Cannot find user.",
+				}
+
+				response.JSON(w)
+				return
+			}
+
+			response := HTTPResponseVM{
+				Status:  http.StatusInternalServerError,
+				Success: false,
+				Message: err.Error(),
+			}
+
+			response.JSON(w)
+			return
+		}
 		postsResponse = append(postsResponse, PostResponse{
-			ID:        post.ID,
+			ID: post.ID,
+			Author: Author{
+				ID:            user.ID,
+				Email:         user.Email,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				ContactNumber: user.ContactNumber,
+				CreatedAt:     user.CreatedAt.Unix(),
+				UpdatedAt:     user.UpdatedAt.Unix(),
+			},
 			Content:   post.Content,
 			CreatedAt: post.CreatedAt.Unix(),
 			UpdatedAt: post.UpdatedAt.Unix(),
@@ -798,8 +832,9 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// update to database
 	post := Post{
-		ID:      int64(idNum),
-		Content: request.Content,
+		ID:       int64(idNum),
+		AuthorID: request.AuthorID,
+		Content:  request.Content,
 	}
 
 	post, err = UpdatePostRepository(post)
@@ -856,7 +891,13 @@ func UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 		Data: &PostResponse{
 			ID: post.ID,
 			Author: Author{
-				ID: user.ID,
+				ID:            user.ID,
+				Email:         user.Email,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				ContactNumber: user.ContactNumber,
+				CreatedAt:     user.CreatedAt.Unix(),
+				UpdatedAt:     user.UpdatedAt.Unix(),
 			},
 			Content:   post.Content,
 			UpdatedAt: post.UpdatedAt.Unix(),
@@ -1041,13 +1082,46 @@ func GetCommentByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get author details
+	user, err := SelectUserByIDRepository(comment.AuthorID)
+	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully get comment.",
 		Data: &CommentResponse{
-			ID:        comment.ID,
-			PostID:    comment.PostID,
+			ID:     comment.ID,
+			PostID: comment.PostID,
+			Author: Author{
+				ID:            user.ID,
+				Email:         user.Email,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				ContactNumber: user.ContactNumber,
+				CreatedAt:     user.CreatedAt.Unix(),
+				UpdatedAt:     user.UpdatedAt.Unix(),
+			},
 			Content:   comment.Content,
 			CreatedAt: comment.CreatedAt.Unix(),
 			UpdatedAt: comment.UpdatedAt.Unix(),
@@ -1086,9 +1160,41 @@ func GetAllCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	var commentResponse []CommentResponse
 
 	for _, comment := range comments {
+		// get author details
+		user, err := SelectUserByIDRepository(comment.AuthorID)
+		if err != nil {
+			if err.Error() == "MISSING_RECORD" {
+				response := HTTPResponseVM{
+					Status:  http.StatusNotFound,
+					Success: false,
+					Message: "Cannot find user.",
+				}
+
+				response.JSON(w)
+				return
+			}
+
+			response := HTTPResponseVM{
+				Status:  http.StatusInternalServerError,
+				Success: false,
+				Message: err.Error(),
+			}
+
+			response.JSON(w)
+			return
+		}
 		commentResponse = append(commentResponse, CommentResponse{
-			ID:        comment.ID,
-			PostID:    comment.PostID,
+			ID:     comment.ID,
+			PostID: comment.PostID,
+			Author: Author{
+				ID:            user.ID,
+				Email:         user.Email,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				ContactNumber: user.ContactNumber,
+				CreatedAt:     user.CreatedAt.Unix(),
+				UpdatedAt:     user.UpdatedAt.Unix(),
+			},
 			Content:   comment.Content,
 			CreatedAt: comment.CreatedAt.Unix(),
 			UpdatedAt: comment.UpdatedAt.Unix(),
@@ -1238,11 +1344,12 @@ func UpdateCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	// insert to database
 	comment := Comment{
-		ID:      int64(idNum),
-		Content: request.Content,
+		ID:       int64(idNum),
+		AuthorID: request.AuthorID,
+		Content:  request.Content,
 	}
 
-	_, err = UpdateCommentRepository(comment)
+	comment, err = UpdateCommentRepository(comment)
 	if err != nil {
 		if err.Error() == "MISSING_RECORD" {
 			response := HTTPResponseVM{
@@ -1265,13 +1372,46 @@ func UpdateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get author details
+	user, err := SelectUserByIDRepository(comment.AuthorID)
+	if err != nil {
+		if err.Error() == "MISSING_RECORD" {
+			response := HTTPResponseVM{
+				Status:  http.StatusNotFound,
+				Success: false,
+				Message: "Cannot find user.",
+			}
+
+			response.JSON(w)
+			return
+		}
+
+		response := HTTPResponseVM{
+			Status:  http.StatusInternalServerError,
+			Success: false,
+			Message: err.Error(),
+		}
+
+		response.JSON(w)
+		return
+	}
+
 	response := &HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully updated comment.",
 		Data: &CommentResponse{
-			ID:        comment.ID,
-			PostID:    comment.PostID,
+			ID:     comment.ID,
+			PostID: comment.PostID,
+			Author: Author{
+				ID:            user.ID,
+				Email:         user.Email,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				ContactNumber: user.ContactNumber,
+				CreatedAt:     user.CreatedAt.Unix(),
+				UpdatedAt:     user.UpdatedAt.Unix(),
+			},
 			Content:   comment.Content,
 			UpdatedAt: time.Now().Unix(),
 		},
@@ -1460,14 +1600,15 @@ func SelectPostsRepository() ([]Post, error) {
 
 // UpdatePostRepository update user data
 func UpdatePostRepository(data Post) (Post, error) {
-	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", postTable)
+	stmt := fmt.Sprintf("UPDATE %s SET author_id=:author_id, content=:content WHERE id=:id", postTable)
 	_, err := mysqlDBHandler.Execute(stmt, data)
 	if err != nil {
 		return Post{}, errors.New("DATABASE_ERROR")
 	}
 
 	post := Post{
-		ID: data.ID,
+		ID:       data.ID,
+		AuthorID: data.AuthorID,
 	}
 
 	return post, err
@@ -1491,6 +1632,7 @@ func InsertCommentRepository(data Comment) (int64, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (post_id, author_id, content) VALUES (:post_id, :author_id, :content)", commentTable)
 	res, err := mysqlDBHandler.Execute(stmt, data)
 	if err != nil {
+		log.Println(err)
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			return -1, errors.New("DUPLICATE_EMAIL")
 		}
@@ -1563,7 +1705,8 @@ func UpdateCommentRepository(data Comment) (Comment, error) {
 	}
 
 	comment := Comment{
-		ID: data.ID,
+		ID:       data.ID,
+		AuthorID: data.AuthorID,
 	}
 
 	return comment, err
