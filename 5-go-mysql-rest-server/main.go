@@ -58,7 +58,7 @@ var (
 	mysqlDBHandler *MySQLDBHandler
 	userTable      string = "users"
 	postTable      string = "posts"
-	commentTable   string = "comment"
+	commentTable   string = "comments"
 )
 
 // ============================== HTTP variables ==============================
