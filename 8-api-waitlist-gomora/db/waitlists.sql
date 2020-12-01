@@ -7,13 +7,15 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-DROP TABLE IF EXISTS `waitlist`;
-CREATE TABLE `waitlist` (
+DROP TABLE IF EXISTS `waitlists`;
+CREATE TABLE `waitlists` (
   `email` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `waitlists` (`email`, `created_at`) VALUES
+('sample@gmail.com', '2020-12-01 10:28:35');
 
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
