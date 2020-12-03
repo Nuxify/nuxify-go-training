@@ -1,0 +1,61 @@
+# set default shell
+SHELL = bash -e -o pipefail
+
+# variables
+VERSION                  ?= $(shell cat ./VERSION)
+
+# docker related
+HOST_PORT				 ?= 8000
+DOCKER_PORT				 ?= 8000
+MYSQL_HOST_PORT		     ?= 3306
+MYSQL_DOCKER_PORT		 ?= 3306
+DOCKER_EXTRA_ARGS        ?=
+DOCKER_REGISTRY          ?=
+DOCKER_REPOSITORY        ?=
+DOCKER_TAG               ?= ${VERSION}
+DOCKER_BUILD_ARGS        ?=${DOCKER_EXTRA_ARGS} --build-arg version="${VERSION}"
+IMAGE_NAME				 ?=kbaluyot/api-term
+
+now=$(shell date +"%Y%m%d%H%M%S")
+
+default: run
+
+.PHONY:	install
+install:
+	go mod tidy
+	go mod vendor
+
+.PHONY:	lint
+lint:
+	golangci-lint run 
+
+.PHONY:	build
+build:
+	mkdir -p bin
+	go build -race -o bin/api-term \
+	    cmd/main.go
+
+.PHONY:	test
+test:
+	go test -race -v -p 1 ./...
+	
+.PHONY:	run
+run:	build
+	./bin/api-term
+
+.PHONY:	build-docker
+build-docker:
+	docker build ${DOCKER_BUILD_ARGS} -t ${IMAGE_NAME}:${VERSION} -t ${IMAGE_NAME}:latest .
+
+.PHONY: up
+up:
+	docker run -p ${HOST_PORT}:${DOCKER_PORT} -p ${MYSQL_HOST_PORT}:${MYSQL_DOCKER_PORT} ${IMAGE_NAME}:${VERSION}
+
+proto-academicyear:
+	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/academicyear/interfaces/http/grpc/pb/academicyear.proto
+
+proto-semester:
+	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/semester/interfaces/http/grpc/pb/semester.proto
+
+proto-gradingperiod:
+	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/gradingperiod/interfaces/http/grpc/pb/gradingperiod.proto

@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  api-term:
+    build: .
+    container_name: api-term
+    restart: unless-stopped
+    ports:
+      - 9094:9094
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-term.entrypoints=http"
+      - "traefik.http.routers.api-term.rule=Host(`${API_URL}`)"
+      - "traefik.http.middlewares.api-term-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.api-term.middlewares=api-term-https-redirect"
+      - "traefik.http.routers.api-term-secure.entrypoints=https"
+      - "traefik.http.routers.api-term-secure.rule=Host(`${API_URL}`)"
+      - "traefik.http.routers.api-term-secure.tls=true"
+      - "traefik.http.routers.api-term-secure.tls.certresolver=http"
+      - "traefik.http.routers.api-term-secure.service=api-term"
+      - "traefik.http.services.api-term.loadbalancer.server.port=8004"
+      - "traefik.docker.network=proxy"
+networks:
+  proxy:
+    external: true
