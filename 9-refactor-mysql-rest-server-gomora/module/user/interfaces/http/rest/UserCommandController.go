@@ -207,7 +207,12 @@ func (controller *UserCommandController) UpdateUserByID(w http.ResponseWriter, r
 		Success: true,
 		Message: "User year successfully updated.",
 		Data: &types.CreateUserResponse{
-			ID: res.ID,
+			ID:            res.ID,
+			Email:         res.Email,
+			FirstName:     res.FirstName,
+			ContactNumber: res.ContactNumber,
+			CreatedAt:     res.CreatedAt.Unix(),
+			UpdatedAt:     time.Now().Unix(),
 		},
 	}
 

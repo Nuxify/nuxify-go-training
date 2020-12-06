@@ -22,6 +22,7 @@ func (repository *UserCommandRepository) DeleteUserByID(userID int64) error {
 		ID: userID,
 	}
 
+	// delete user
 	stmt := fmt.Sprintf("DELETE FROM %s WHERE id=:id", user.GetModelName())
 	_, err := repository.MySQLDBHandlerInterface.Execute(stmt, user)
 	if err != nil {
@@ -72,10 +73,12 @@ func (repository *UserCommandRepository) UpdateUserByID(data repositoryTypes.Upd
 		ContactNumber: data.ContactNumber,
 	}
 
-	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number"+
+	// update user
+	stmt := fmt.Sprintf("UPDATE %s SET first_name=:first_name,last_name=:last_name,contact_number=:contact_number "+
 		"WHERE id=:id", user.GetModelName())
 	_, err := repository.MySQLDBHandlerInterface.Execute(stmt, user)
 	if err != nil {
+		fmt.Println(err)
 		return *user, errors.New(apiError.DatabaseError)
 	}
 
