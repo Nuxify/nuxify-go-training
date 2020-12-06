@@ -14,26 +14,18 @@ import (
 	"os"
 	"sync"
 
-	"api-term/infrastructures/database/mysql"
-	academicYearRepository "api-term/module/academicyear/infrastructure/repository"
-	academicYearService "api-term/module/academicyear/infrastructure/service"
-	academicYearREST "api-term/module/academicyear/interfaces/http/rest"
-	gradingPeriodRepository "api-term/module/gradingperiod/infrastructure/repository"
-	gradingPeriodService "api-term/module/gradingperiod/infrastructure/service"
-	gradingPeriodREST "api-term/module/gradingperiod/interfaces/http/rest"
-	semesterRepository "api-term/module/semester/infrastructure/repository"
-	semesterService "api-term/module/semester/infrastructure/service"
-	semesterREST "api-term/module/semester/interfaces/http/rest"
+	"rest-server/infrastructures/database/mysql"
+
+	userRepository "rest-server/module/user/infrastructure/repository"
+	userService "rest-server/module/user/infrastructure/service"
+	userREST "rest-server/module/user/interfaces/http/rest"
 )
 
 // ServiceContainerInterface contains the dependency injected instances
 type ServiceContainerInterface interface {
 	// REST
-	RegisterAcademicYearRESTCommandController() academicYearREST.AcademicYearCommandController
-	RegisterAcademicYearRESTQueryController() academicYearREST.AcademicYearQueryController
-	RegisterGradingPeriodRESTQueryController() gradingPeriodREST.GradingPeriodQueryController
-	RegisterSemesterRESTCommandController() semesterREST.SemesterCommandController
-	RegisterSemesterRESTQueryController() semesterREST.SemesterQueryController
+	RegisterUserRESTCommandController() userREST.UserCommandController
+	RegisterUserRESTQueryController() userREST.UserQueryController
 }
 
 type kernel struct{}
@@ -48,56 +40,23 @@ var (
 //==========================================================================
 
 //================================= REST ===================================
-// RegisterAcademicYearRESTCommandController performs dependency injection to the RegisterAcademicYearRESTCommandController
-func (k *kernel) RegisterAcademicYearRESTCommandController() academicYearREST.AcademicYearCommandController {
-	service := k.academicYearCommandServiceContainer()
+// RegisterUserRESTCommandController performs dependency injection to the RegisterUserRESTCommandController
+func (k *kernel) RegisterUserRESTCommandController() userREST.UserCommandController {
+	service := k.userCommandServiceContainer()
 
-	controller := academicYearREST.AcademicYearCommandController{
-		AcademicYearCommandServiceInterface: service,
+	controller := userREST.UserCommandController{
+		UserCommandServiceInterface: service,
 	}
 
 	return controller
 }
 
-// RegisterAcademicYearRESTQueryController performs dependency injection to the RegisterAcademicYearRESTQueryController
-func (k *kernel) RegisterAcademicYearRESTQueryController() academicYearREST.AcademicYearQueryController {
-	service := k.academicYearQueryServiceContainer()
+// RegisterUserRESTQueryController performs dependency injection to the RegisterUserRESTQueryController
+func (k *kernel) RegisterUserRESTQueryController() userREST.UserQueryController {
+	service := k.userQueryServiceContainer()
 
-	controller := academicYearREST.AcademicYearQueryController{
-		AcademicYearQueryServiceInterface: service,
-	}
-
-	return controller
-}
-
-// RegisterGradingPeriodRESTQueryController performs dependency injection to the RegisterGradingPeriodRESTQueryController
-func (k *kernel) RegisterGradingPeriodRESTQueryController() gradingPeriodREST.GradingPeriodQueryController {
-	service := k.gradingPeriodQueryServiceContainer()
-
-	controller := gradingPeriodREST.GradingPeriodQueryController{
-		GradingPeriodQueryServiceInterface: service,
-	}
-
-	return controller
-}
-
-// RegisterSemesterRESTCommandController performs dependency injection to the RegisterSemesterRESTCommandController
-func (k *kernel) RegisterSemesterRESTCommandController() semesterREST.SemesterCommandController {
-	service := k.semesterCommandServiceContainer()
-
-	controller := semesterREST.SemesterCommandController{
-		SemesterCommandServiceInterface: service,
-	}
-
-	return controller
-}
-
-// RegisterSemesterRESTQueryController performs dependency injection to the RegisterSemesterRESTQueryController
-func (k *kernel) RegisterSemesterRESTQueryController() semesterREST.SemesterQueryController {
-	service := k.semesterQueryServiceContainer()
-
-	controller := semesterREST.SemesterQueryController{
-		SemesterQueryServiceInterface: service,
+	controller := userREST.UserQueryController{
+		UserQueryServiceInterface: service,
 	}
 
 	return controller
@@ -105,70 +64,28 @@ func (k *kernel) RegisterSemesterRESTQueryController() semesterREST.SemesterQuer
 
 //==========================================================================
 
-func (k *kernel) academicYearCommandServiceContainer() *academicYearService.AcademicYearCommandService {
-	repository := &academicYearRepository.AcademicYearCommandRepository{
+func (k *kernel) userCommandServiceContainer() *userService.UserCommandService {
+	repository := &userRepository.UserCommandRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &academicYearService.AcademicYearCommandService{
-		AcademicYearCommandRepositoryInterface: &academicYearRepository.AcademicYearCommandRepositoryCircuitBreaker{
-			AcademicYearCommandRepositoryInterface: repository,
+	service := &userService.UserCommandService{
+		UserCommandRepositoryInterface: &userRepository.UserCommandRepositoryCircuitBreaker{
+			UserCommandRepositoryInterface: repository,
 		},
 	}
 
 	return service
 }
 
-func (k *kernel) academicYearQueryServiceContainer() *academicYearService.AcademicYearQueryService {
-	repository := &academicYearRepository.AcademicYearQueryRepository{
+func (k *kernel) userQueryServiceContainer() *userService.UserQueryService {
+	repository := &userRepository.UserQueryRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &academicYearService.AcademicYearQueryService{
-		AcademicYearQueryRepositoryInterface: &academicYearRepository.AcademicYearQueryRepositoryCircuitBreaker{
-			AcademicYearQueryRepositoryInterface: repository,
-		},
-	}
-
-	return service
-}
-
-func (k *kernel) gradingPeriodQueryServiceContainer() *gradingPeriodService.GradingPeriodQueryService {
-	repository := &gradingPeriodRepository.GradingPeriodQueryRepository{
-		MySQLDBHandlerInterface: mysqlDBHandler,
-	}
-
-	service := &gradingPeriodService.GradingPeriodQueryService{
-		GradingPeriodQueryRepositoryInterface: &gradingPeriodRepository.GradingPeriodQueryRepositoryCircuitBreaker{
-			GradingPeriodQueryRepositoryInterface: repository,
-		},
-	}
-
-	return service
-}
-
-func (k *kernel) semesterCommandServiceContainer() *semesterService.SemesterCommandService {
-	repository := &semesterRepository.SemesterCommandRepository{
-		MySQLDBHandlerInterface: mysqlDBHandler,
-	}
-
-	service := &semesterService.SemesterCommandService{
-		SemesterCommandRepositoryInterface: &semesterRepository.SemesterCommandRepositoryCircuitBreaker{
-			SemesterCommandRepositoryInterface: repository,
-		},
-	}
-
-	return service
-}
-
-func (k *kernel) semesterQueryServiceContainer() *semesterService.SemesterQueryService {
-	repository := &semesterRepository.SemesterQueryRepository{
-		MySQLDBHandlerInterface: mysqlDBHandler,
-	}
-
-	service := &semesterService.SemesterQueryService{
-		SemesterQueryRepositoryInterface: &semesterRepository.SemesterQueryRepositoryCircuitBreaker{
-			SemesterQueryRepositoryInterface: repository,
+	service := &userService.UserQueryService{
+		UserQueryRepositoryInterface: &userRepository.UserQueryRepositoryCircuitBreaker{
+			UserQueryRepositoryInterface: repository,
 		},
 	}
 

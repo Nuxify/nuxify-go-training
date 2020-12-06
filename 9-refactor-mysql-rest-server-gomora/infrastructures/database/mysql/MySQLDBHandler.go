@@ -6,7 +6,6 @@ import (
 
 	// mysql import handler
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jackskj/carta"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -36,29 +35,6 @@ func (h *MySQLDBHandler) Connect(host, port, database, username, password string
 	return nil
 }
 
-// DataMapQuery ideal for 1-many relationship queries
-// It utilizes the carta package for automatic data mapping
-func (h *MySQLDBHandler) DataMapQuery(qstmt string, model interface{}, bindModel interface{}) error {
-	nstmt, err := h.Conn.PrepareNamed(qstmt)
-	if err != nil {
-		return err
-	}
-	defer nstmt.Close()
-
-	rows, err := nstmt.Query(model)
-	if err != nil {
-		return err
-	}
-
-	// bind to carta
-	err = carta.Map(rows, bindModel)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Execute executes the mysql statement following NamedExec
 // It requires a valid sql statement and its struct
 func (h *MySQLDBHandler) Execute(stmt string, model interface{}) (sql.Result, error) {
@@ -80,9 +56,6 @@ func (h *MySQLDBHandler) Query(qstmt string, model interface{}, bindModel interf
 	defer nstmt.Close()
 
 	err = nstmt.Select(bindModel, model)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }

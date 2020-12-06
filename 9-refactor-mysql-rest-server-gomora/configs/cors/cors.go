@@ -29,7 +29,6 @@ func (c *Config) AllowedMethods() []string {
 		"GET",
 		"POST",
 		"PUT",
-		"PATCH",
 		"DELETE",
 		"OPTIONS",
 	}

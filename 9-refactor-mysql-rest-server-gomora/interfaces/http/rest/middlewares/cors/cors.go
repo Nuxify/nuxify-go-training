@@ -3,7 +3,7 @@ package cors
 import (
 	"github.com/go-chi/cors"
 
-	corsConfig "api-term/configs/cors"
+	corsConfig "rest-server/configs/cors"
 )
 
 // Init initializes the CORS configuration

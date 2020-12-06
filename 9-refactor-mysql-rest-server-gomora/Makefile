@@ -14,7 +14,7 @@ DOCKER_REGISTRY          ?=
 DOCKER_REPOSITORY        ?=
 DOCKER_TAG               ?= ${VERSION}
 DOCKER_BUILD_ARGS        ?=${DOCKER_EXTRA_ARGS} --build-arg version="${VERSION}"
-IMAGE_NAME				 ?=kbaluyot/api-term
+IMAGE_NAME				 ?=kbaluyot/gomora
 
 now=$(shell date +"%Y%m%d%H%M%S")
 
@@ -32,7 +32,7 @@ lint:
 .PHONY:	build
 build:
 	mkdir -p bin
-	go build -race -o bin/api-term \
+	go build -race -o bin/gomora \
 	    cmd/main.go
 
 .PHONY:	test
@@ -41,7 +41,11 @@ test:
 	
 .PHONY:	run
 run:	build
-	./bin/api-term
+	./bin/gomora
+
+.PHONY:	run-windows
+run-windows:	build
+	./bin/gomora.exe
 
 .PHONY:	build-docker
 build-docker:
@@ -51,11 +55,5 @@ build-docker:
 up:
 	docker run -p ${HOST_PORT}:${DOCKER_PORT} -p ${MYSQL_HOST_PORT}:${MYSQL_DOCKER_PORT} ${IMAGE_NAME}:${VERSION}
 
-proto-academicyear:
-	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/academicyear/interfaces/http/grpc/pb/academicyear.proto
-
-proto-semester:
-	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/semester/interfaces/http/grpc/pb/semester.proto
-
-proto-gradingperiod:
-	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/gradingperiod/interfaces/http/grpc/pb/gradingperiod.proto
+proto-record:
+	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative module/record/interfaces/http/grpc/pb/record.proto

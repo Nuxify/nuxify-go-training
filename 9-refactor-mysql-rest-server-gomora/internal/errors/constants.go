@@ -27,11 +27,4 @@ const (
 	SystemScriptFailed string = "SYSTEM_SCRIPT_FAILED"
 	// UnauthorizedAccess is the code for accessing restricted routes
 	UnauthorizedAccess string = "UNAUTHORIZED_ACCESS"
-
-	// DuplicateEmail occurs when the email entry already exist
-	DuplicateEmail string = "DUPLICATE_EMAIL"
-	// PasswordHashingFailed occurs when the password bcrypt fails
-	PasswordHashingFailed string = "PASSWORD_HASHING_FAILED"
-	// PasswordUnmatched occurs when the compare pass and hash returns false
-	PasswordUnmatched string = "PASSWORD_UNMATCHED"
 )
