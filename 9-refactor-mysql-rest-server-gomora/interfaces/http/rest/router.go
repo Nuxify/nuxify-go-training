@@ -41,6 +41,8 @@ func (router *router) InitRouter() *chi.Mux {
 	// DI assignment
 	userCommandController := interfaces.ServiceContainer().RegisterUserRESTCommandController()
 	userQueryController := interfaces.ServiceContainer().RegisterUserRESTQueryController()
+	postCommandController := interfaces.ServiceContainer().RegisterPostRESTCommandController()
+	postQueryController := interfaces.ServiceContainer().RegisterPostRESTQueryController()
 
 	// create router
 	r := chi.NewRouter()
@@ -74,6 +76,14 @@ func (router *router) InitRouter() *chi.Mux {
 				r.Get("/{id}", userQueryController.GetUserByID)
 			})
 			r.Get("/users/", userQueryController.GetUsers)
+
+			r.Route("/post", func(r chi.Router) {
+				r.Post("/", postCommandController.CreatePost)
+				r.Delete("/{id}", postCommandController.DeletePostByID)
+				r.Patch("/{id}", postCommandController.UpdatePostByID)
+				r.Get("/{id}", postQueryController.GetPostByID)
+			})
+			r.Get("/posts/", postQueryController.GetPosts)
 		})
 	})
 

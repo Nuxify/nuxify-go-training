@@ -1,6 +1,6 @@
 package types
 
-// CreateUserRequest request type for create academic year
+// CreateUserRequest request type for create user
 type CreateUserRequest struct {
 	Email         string `json:"email"`
 	FirstName     string `json:"firstName"`
@@ -8,7 +8,7 @@ type CreateUserRequest struct {
 	ContactNumber string `json:"contactNumber"`
 }
 
-// CreateUserResponse response type for create academic year
+// CreateUserResponse response type for create user
 type CreateUserResponse struct {
 	ID            int64  `json:"id"`
 	Email         string `json:"email"`
@@ -19,7 +19,7 @@ type CreateUserResponse struct {
 	UpdatedAt     int64  `json:"updatedAt"`
 }
 
-// UserResponse response type for academic year
+// UserResponse response type for user
 type UserResponse struct {
 	ID            int64  `json:"id"`
 	Email         string `json:"email"`
@@ -30,7 +30,7 @@ type UserResponse struct {
 	UpdatedAt     int64  `json:"updatedAt"`
 }
 
-// UpdateUserRequest request type for update academic year
+// UpdateUserRequest request type for update user
 type UpdateUserRequest struct {
 	Email         string `json:"email"`
 	FirstName     string `json:"firstName"`
