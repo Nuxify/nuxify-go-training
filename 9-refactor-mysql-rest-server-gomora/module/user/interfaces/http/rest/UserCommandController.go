@@ -205,7 +205,7 @@ func (controller *UserCommandController) UpdateUserByID(w http.ResponseWriter, r
 	response := viewmodels.HTTPResponseVM{
 		Status:  http.StatusCreated,
 		Success: true,
-		Message: "User year successfully updated.",
+		Message: "User successfully updated.",
 		Data: &types.CreateUserResponse{
 			ID:            res.ID,
 			Email:         res.Email,

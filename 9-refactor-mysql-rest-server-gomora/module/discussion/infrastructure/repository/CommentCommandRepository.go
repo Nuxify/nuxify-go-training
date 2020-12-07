@@ -64,7 +64,6 @@ func (repository *CommentCommandRepository) InsertComment(data repositoryTypes.C
 
 // UpdateCommentByID update resource
 func (repository *CommentCommandRepository) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
-	fmt.Println(data)
 	comment := &entity.Comment{
 		ID:       data.ID,
 		AuthorID: data.AuthorID,
