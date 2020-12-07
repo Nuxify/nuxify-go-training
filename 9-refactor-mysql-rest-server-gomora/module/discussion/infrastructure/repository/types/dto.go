@@ -2,9 +2,9 @@ package types
 
 // CreatePost create repository types for post
 type CreatePost struct {
-	ID       int64  `json:"id"`
-	AuthorID int64  `json:"authorId"`
-	Content  string `json:"content"`
+	ID       int64
+	AuthorID int64
+	Content  string
 }
 
 // GetPost get repository types for post
@@ -14,28 +14,17 @@ type GetPost struct {
 
 // UpdatePost update repository types for post
 type UpdatePost struct {
-	ID       int64  `json:"id"`
-	AuthorID int64  `json:"authorId"`
-	Content  string `json:"content"`
-}
-
-// Author response struct for author
-type Author struct {
-	ID            int64  `json:"id"`
-	Email         string `json:"email"`
-	FirstName     string `json:"firstName"`
-	LastName      string `json:"lastName"`
-	ContactNumber string `json:"contactNumber"`
-	CreatedAt     int64  `json:"createdAt"`
-	UpdatedAt     int64  `json:"updatedAt"`
+	ID       int64
+	AuthorID int64
+	Content  string
 }
 
 // CreateComment create repository types for comment
 type CreateComment struct {
-	ID       int64  `json:"id"`
-	PostID   int64  `json:"postId"`
-	AuthorID int64  `json:"authorId"`
-	Content  string `json:"content"`
+	ID       int64
+	PostID   int64
+	AuthorID int64
+	Content  string
 }
 
 // GetComment get repository types for comment
@@ -45,7 +34,7 @@ type GetComment struct {
 
 // UpdateComment update repository types for comment
 type UpdateComment struct {
-	ID       int64  `json:"id"`
-	AuthorID int64  `json:"authorId"`
-	Content  string `json:"content"`
+	ID       int64
+	AuthorID int64
+	Content  string
 }

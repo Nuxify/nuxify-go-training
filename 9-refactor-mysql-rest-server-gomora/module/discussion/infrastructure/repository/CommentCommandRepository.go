@@ -64,11 +64,12 @@ func (repository *CommentCommandRepository) InsertComment(data repositoryTypes.C
 
 // UpdateCommentByID update resource
 func (repository *CommentCommandRepository) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
+	fmt.Println(data)
 	comment := &entity.Comment{
+		ID:       data.ID,
 		AuthorID: data.AuthorID,
 		Content:  data.Content,
 	}
-
 	// update comment
 	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", comment.GetModelName())
 	_, err := repository.MySQLDBHandlerInterface.Execute(stmt, comment)
