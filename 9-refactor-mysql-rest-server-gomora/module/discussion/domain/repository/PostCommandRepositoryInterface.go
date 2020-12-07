@@ -5,7 +5,7 @@ import (
 	repositoryTypes "rest-server/module/discussion/infrastructure/repository/types"
 )
 
-// PostCommandRepositoryInterface holds the implementable methods for the academic year command repository
+// PostCommandRepositoryInterface holds the implementable methods for the comment command repository
 type PostCommandRepositoryInterface interface {
 	DeletePostByID(PostID int64) error
 	InsertPost(data repositoryTypes.CreatePost) (entity.Post, error)

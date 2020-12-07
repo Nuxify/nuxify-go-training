@@ -14,16 +14,16 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// PostQueryController handles the rest requests for post queries
-type PostQueryController struct {
-	application.PostQueryServiceInterface
+// CommentQueryController handles the rest requests for comment queries
+type CommentQueryController struct {
+	application.CommentQueryServiceInterface
 }
 
-// GetPosts get post
-func (controller *PostQueryController) GetPosts(w http.ResponseWriter, r *http.Request) {
-	var post serviceTypes.GetPost
+// GetComments get comment
+func (controller *CommentQueryController) GetComments(w http.ResponseWriter, r *http.Request) {
+	var comment serviceTypes.GetComment
 
-	res, err := controller.PostQueryServiceInterface.GetPosts(context.TODO(), post)
+	res, err := controller.CommentQueryServiceInterface.GetComments(context.TODO(), comment)
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -48,29 +48,30 @@ func (controller *PostQueryController) GetPosts(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	var posts []types.PostResponse
+	var comments []types.CommentResponse
 
-	for _, post := range res {
-		posts = append(posts, types.PostResponse{
-			ID:        post.ID,
-			Content:   post.Content,
-			CreatedAt: post.CreatedAt.Unix(),
-			UpdatedAt: post.UpdatedAt.Unix(),
+	for _, comment := range res {
+		comments = append(comments, types.CommentResponse{
+			ID:        comment.ID,
+			PostID:    comment.PostID,
+			Content:   comment.Content,
+			CreatedAt: comment.CreatedAt.Unix(),
+			UpdatedAt: comment.UpdatedAt.Unix(),
 		})
 	}
 	response := viewmodels.HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully fetched post data.",
-		Data:    posts,
+		Message: "Successfully fetched comment data.",
+		Data:    comments,
 	}
 
 	response.JSON(w)
 }
 
-// GetPostByID get post
-func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *http.Request) {
-	var post serviceTypes.GetPost
+// GetCommentByID get comment
+func (controller *CommentQueryController) GetCommentByID(w http.ResponseWriter, r *http.Request) {
+	var comment serviceTypes.GetComment
 
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -86,9 +87,9 @@ func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	post.ID = int64(id)
+	comment.ID = int64(id)
 
-	res, err := controller.PostQueryServiceInterface.GetPostByID(context.TODO(), post)
+	res, err := controller.CommentQueryServiceInterface.GetCommentByID(context.TODO(), comment)
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -113,21 +114,21 @@ func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	var posts []types.PostResponse
+	var comments []types.CommentResponse
 
-	for _, post := range res {
-		posts = append(posts, types.PostResponse{
-			ID:        post.ID,
-			Content:   post.Content,
-			CreatedAt: post.CreatedAt.Unix(),
-			UpdatedAt: post.UpdatedAt.Unix(),
+	for _, comment := range res {
+		comments = append(comments, types.CommentResponse{
+			ID:        comment.ID,
+			Content:   comment.Content,
+			CreatedAt: comment.CreatedAt.Unix(),
+			UpdatedAt: comment.UpdatedAt.Unix(),
 		})
 	}
 	response := viewmodels.HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
-		Message: "Successfully fetched post data.",
-		Data:    posts,
+		Message: "Successfully fetched comment data.",
+		Data:    comments,
 	}
 
 	response.JSON(w)

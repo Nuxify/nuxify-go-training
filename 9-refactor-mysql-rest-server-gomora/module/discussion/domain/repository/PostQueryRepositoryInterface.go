@@ -5,7 +5,7 @@ import (
 	repositoryTypes "rest-server/module/discussion/infrastructure/repository/types"
 )
 
-// PostQueryRepositoryInterface holds the methods for the academic year query repository
+// PostQueryRepositoryInterface holds the methods for the comment query repository
 type PostQueryRepositoryInterface interface {
 	SelectPosts(data repositoryTypes.GetPost) ([]entity.Post, error)
 	SelectPostByID(data repositoryTypes.GetPost) ([]entity.Post, error)

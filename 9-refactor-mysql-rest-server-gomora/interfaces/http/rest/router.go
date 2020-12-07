@@ -43,6 +43,8 @@ func (router *router) InitRouter() *chi.Mux {
 	userQueryController := interfaces.ServiceContainer().RegisterUserRESTQueryController()
 	postCommandController := interfaces.ServiceContainer().RegisterPostRESTCommandController()
 	postQueryController := interfaces.ServiceContainer().RegisterPostRESTQueryController()
+	commentCommandController := interfaces.ServiceContainer().RegisterCommentRESTCommandController()
+	commentQueryController := interfaces.ServiceContainer().RegisterCommentRESTQueryController()
 
 	// create router
 	r := chi.NewRouter()
@@ -84,6 +86,14 @@ func (router *router) InitRouter() *chi.Mux {
 				r.Get("/{id}", postQueryController.GetPostByID)
 			})
 			r.Get("/posts/", postQueryController.GetPosts)
+
+			r.Route("/comment", func(r chi.Router) {
+				r.Post("/", commentCommandController.CreateComment)
+				r.Delete("/{id}", commentCommandController.DeleteCommentByID)
+				r.Patch("/{id}", commentCommandController.UpdateCommentByID)
+				r.Get("/{id}", commentQueryController.GetCommentByID)
+			})
+			r.Get("/comments/", commentQueryController.GetComments)
 		})
 	})
 

@@ -41,3 +41,37 @@ type Author struct {
 	CreatedAt     int64  `json:"createdAt"`
 	UpdatedAt     int64  `json:"updatedAt"`
 }
+
+// CreateCommentRequest request type for create Comment
+type CreateCommentRequest struct {
+	PostID   int64  `json:"postId"`
+	AuthorID int64  `json:"authorId"`
+	Content  string `json:"content"`
+}
+
+// CreateCommentResponse response type for create comment
+type CreateCommentResponse struct {
+	ID        int64  `json:"id"`
+	PostID    int64  `json:"postId"`
+	Author    Author `json:"author"`
+	Content   string `json:"content"`
+	CreatedAt int64  `json:"createdAt"`
+	UpdatedAt int64  `json:"updatedAt"`
+}
+
+// CommentResponse response type for comment
+type CommentResponse struct {
+	ID        int64  `json:"id"`
+	PostID    int64  `json:"postId"`
+	Author    Author `json:"author"`
+	Content   string `json:"content"`
+	CreatedAt int64  `json:"createdAt"`
+	UpdatedAt int64  `json:"updatedAt"`
+}
+
+// UpdateCommentRequest request type for update comment
+type UpdateCommentRequest struct {
+	ID       int64  `json:"id"`
+	AuthorID int64  `json:"authorId"`
+	Content  string `json:"content"`
+}
