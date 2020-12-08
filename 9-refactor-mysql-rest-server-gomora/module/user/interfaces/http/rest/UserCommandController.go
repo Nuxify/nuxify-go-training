@@ -88,7 +88,6 @@ func (controller *UserCommandController) CreateUser(w http.ResponseWriter, r *ht
 		Success: true,
 		Message: "User successfully created.",
 		Data: &types.CreateUserResponse{
-			ID:            res.ID,
 			Email:         res.Email,
 			FirstName:     res.FirstName,
 			LastName:      res.LastName,
@@ -206,13 +205,12 @@ func (controller *UserCommandController) UpdateUserByID(w http.ResponseWriter, r
 		Status:  http.StatusCreated,
 		Success: true,
 		Message: "User successfully updated.",
-		Data: &types.CreateUserResponse{
+		Data: &types.UpdateUserResponse{
 			ID:            res.ID,
 			Email:         res.Email,
 			FirstName:     res.FirstName,
+			LastName:      res.LastName,
 			ContactNumber: res.ContactNumber,
-			CreatedAt:     res.CreatedAt.Unix(),
-			UpdatedAt:     time.Now().Unix(),
 		},
 	}
 

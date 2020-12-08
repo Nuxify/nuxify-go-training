@@ -10,7 +10,6 @@ type CreateUserRequest struct {
 
 // CreateUserResponse response type for create user
 type CreateUserResponse struct {
-	ID            int64  `json:"id"`
 	Email         string `json:"email"`
 	FirstName     string `json:"firstName"`
 	LastName      string `json:"lastName"`
@@ -32,6 +31,15 @@ type UserResponse struct {
 
 // UpdateUserRequest request type for update user
 type UpdateUserRequest struct {
+	Email         string `json:"email"`
+	FirstName     string `json:"firstName"`
+	LastName      string `json:"lastName"`
+	ContactNumber string `json:"contactNumber"`
+}
+
+// UpdateUserResponse Response type for update user
+type UpdateUserResponse struct {
+	ID            int64  `json:"id"`
 	Email         string `json:"email"`
 	FirstName     string `json:"firstName"`
 	LastName      string `json:"lastName"`
