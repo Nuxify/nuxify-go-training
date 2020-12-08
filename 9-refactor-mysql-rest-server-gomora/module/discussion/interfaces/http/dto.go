@@ -8,7 +8,6 @@ type CreatePostRequest struct {
 
 // CreatePostResponse response type for create post
 type CreatePostResponse struct {
-	ID        int64  `json:"id"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`
 	UpdatedAt int64  `json:"updatedAt"`
@@ -54,7 +53,6 @@ type CreateCommentRequest struct {
 
 // CreateCommentResponse response type for create comment
 type CreateCommentResponse struct {
-	ID        int64  `json:"id"`
 	PostID    int64  `json:"postId"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`

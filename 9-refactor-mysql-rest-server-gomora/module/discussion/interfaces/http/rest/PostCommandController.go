@@ -74,7 +74,6 @@ func (controller *PostCommandController) CreatePost(w http.ResponseWriter, r *ht
 		Success: true,
 		Message: "Post successfully created.",
 		Data: &types.CreatePostResponse{
-			ID:        res.ID,
 			Content:   res.Content,
 			CreatedAt: time.Now().Unix(),
 			UpdatedAt: time.Now().Unix(),

@@ -52,7 +52,6 @@ func (controller *PostQueryController) GetPosts(w http.ResponseWriter, r *http.R
 
 	for _, post := range res {
 		posts = append(posts, types.PostResponse{
-			ID:        post.ID,
 			Content:   post.Content,
 			CreatedAt: post.CreatedAt.Unix(),
 			UpdatedAt: post.UpdatedAt.Unix(),

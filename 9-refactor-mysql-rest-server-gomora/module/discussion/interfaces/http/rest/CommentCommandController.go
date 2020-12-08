@@ -75,7 +75,6 @@ func (controller *CommentCommandController) CreateComment(w http.ResponseWriter,
 		Success: true,
 		Message: "Comment successfully created.",
 		Data: &types.CreateCommentResponse{
-			ID:        res.ID,
 			PostID:    res.PostID,
 			Content:   res.Content,
 			CreatedAt: time.Now().Unix(),
