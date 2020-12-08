@@ -119,6 +119,7 @@ func (controller *CommentQueryController) GetCommentByID(w http.ResponseWriter, 
 	for _, comment := range res {
 		comments = append(comments, types.CommentResponse{
 			ID:        comment.ID,
+			PostID:    comment.PostID,
 			Content:   comment.Content,
 			CreatedAt: comment.CreatedAt.Unix(),
 			UpdatedAt: comment.UpdatedAt.Unix(),

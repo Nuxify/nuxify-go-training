@@ -9,7 +9,6 @@ type CreatePostRequest struct {
 // CreatePostResponse response type for create post
 type CreatePostResponse struct {
 	ID        int64  `json:"id"`
-	Author    Author `json:"author"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`
 	UpdatedAt int64  `json:"updatedAt"`
@@ -18,7 +17,6 @@ type CreatePostResponse struct {
 // PostResponse response type for post
 type PostResponse struct {
 	ID        int64  `json:"id"`
-	Author    Author `json:"author"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`
 	UpdatedAt int64  `json:"updatedAt"`
@@ -58,7 +56,6 @@ type CreateCommentRequest struct {
 type CreateCommentResponse struct {
 	ID        int64  `json:"id"`
 	PostID    int64  `json:"postId"`
-	Author    Author `json:"author"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`
 	UpdatedAt int64  `json:"updatedAt"`
@@ -68,7 +65,6 @@ type CreateCommentResponse struct {
 type CommentResponse struct {
 	ID        int64  `json:"id"`
 	PostID    int64  `json:"postId"`
-	Author    Author `json:"author"`
 	Content   string `json:"content"`
 	CreatedAt int64  `json:"createdAt"`
 	UpdatedAt int64  `json:"updatedAt"`
