@@ -157,7 +157,6 @@ func (controller *CommentCommandController) UpdateCommentByID(w http.ResponseWri
 		return
 	}
 
-	comment.AuthorID = request.AuthorID
 	comment.Content = request.Content
 
 	res, err := controller.CommentCommandServiceInterface.UpdateCommentByID(context.TODO(), comment)
@@ -189,12 +188,9 @@ func (controller *CommentCommandController) UpdateCommentByID(w http.ResponseWri
 		Status:  http.StatusCreated,
 		Success: true,
 		Message: "Comment successfully updated.",
-		Data: &types.CreateCommentResponse{
-			ID:        res.ID,
-			PostID:    res.PostID,
-			Content:   res.Content,
-			CreatedAt: res.CreatedAt.Unix(),
-			UpdatedAt: time.Now().Unix(),
+		Data: &types.UpdateCommentResponse{
+			ID:      res.ID,
+			Content: res.Content,
 		},
 	}
 

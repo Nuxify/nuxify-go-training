@@ -30,6 +30,12 @@ type UpdatePostRequest struct {
 	Content  string `json:"content"`
 }
 
+// UpdatePostResponse response type for update post
+type UpdatePostResponse struct {
+	ID      int64  `json:"id"`
+	Content string `json:"content"`
+}
+
 // Author response struct for author
 type Author struct {
 	ID            int64  `json:"id"`
@@ -70,6 +76,11 @@ type CommentResponse struct {
 
 // UpdateCommentRequest request type for update comment
 type UpdateCommentRequest struct {
-	AuthorID int64  `json:"authorId"`
-	Content  string `json:"content"`
+	Content string `json:"content"`
+}
+
+// UpdateCommentResponse response type for comment
+type UpdateCommentResponse struct {
+	ID      int64  `json:"id"`
+	Content string `json:"content"`
 }

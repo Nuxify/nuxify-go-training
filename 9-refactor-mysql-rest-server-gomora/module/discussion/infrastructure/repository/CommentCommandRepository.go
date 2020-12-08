@@ -65,9 +65,8 @@ func (repository *CommentCommandRepository) InsertComment(data repositoryTypes.C
 // UpdateCommentByID update resource
 func (repository *CommentCommandRepository) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
 	comment := &entity.Comment{
-		ID:       data.ID,
-		AuthorID: data.AuthorID,
-		Content:  data.Content,
+		ID:      data.ID,
+		Content: data.Content,
 	}
 	// update comment
 	stmt := fmt.Sprintf("UPDATE %s SET content=:content WHERE id=:id", comment.GetModelName())

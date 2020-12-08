@@ -43,6 +43,7 @@ func (service *PostCommandService) DeletePostByID(postID int64) error {
 func (service *PostCommandService) UpdatePostByID(ctx context.Context, data types.UpdatePost) (entity.Post, error) {
 	var post repositoryTypes.UpdatePost
 
+	post.ID = data.ID
 	post.AuthorID = data.AuthorID
 	post.Content = data.Content
 

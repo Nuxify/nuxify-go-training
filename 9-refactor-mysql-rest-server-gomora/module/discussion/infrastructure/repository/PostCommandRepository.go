@@ -68,7 +68,6 @@ func (repository *PostCommandRepository) UpdatePostByID(data repositoryTypes.Upd
 		AuthorID: data.AuthorID,
 		Content:  data.Content,
 	}
-
 	// update post
 	stmt := fmt.Sprintf("UPDATE %s SET author_id=:author_id, content=:content WHERE id=:id", post.GetModelName())
 	_, err := repository.MySQLDBHandlerInterface.Execute(stmt, post)

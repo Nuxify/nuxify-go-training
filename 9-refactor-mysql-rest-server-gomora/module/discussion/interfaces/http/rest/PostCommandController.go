@@ -187,11 +187,9 @@ func (controller *PostCommandController) UpdatePostByID(w http.ResponseWriter, r
 		Status:  http.StatusCreated,
 		Success: true,
 		Message: "Post successfully updated.",
-		Data: &types.CreatePostResponse{
-			ID:        res.ID,
-			Content:   res.Content,
-			CreatedAt: res.CreatedAt.Unix(),
-			UpdatedAt: time.Now().Unix(),
+		Data: &types.UpdatePostResponse{
+			ID:      res.ID,
+			Content: res.Content,
 		},
 	}
 

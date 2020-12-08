@@ -44,7 +44,7 @@ func (service *CommentCommandService) DeleteCommentByID(commentID int64) error {
 func (service *CommentCommandService) UpdateCommentByID(ctx context.Context, data types.UpdateComment) (entity.Comment, error) {
 	var comment repositoryTypes.UpdateComment
 
-	comment.AuthorID = data.AuthorID
+	comment.ID = data.ID
 	comment.Content = data.Content
 
 	res, err := service.CommentCommandRepositoryInterface.UpdateCommentByID(comment)
