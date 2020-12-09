@@ -11,3 +11,10 @@ type PostCommandRepositoryInterface interface {
 	InsertPost(data repositoryTypes.CreatePost) (entity.Post, error)
 	UpdatePostByID(data repositoryTypes.UpdatePost) (entity.Post, error)
 }
+
+// CommentCommandRepositoryInterface holds the implementable methods for the comment command repository
+type CommentCommandRepositoryInterface interface {
+	DeleteCommentByID(CommentID int64) error
+	InsertComment(data repositoryTypes.CreateComment) (entity.Comment, error)
+	UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error)
+}
