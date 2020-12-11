@@ -7,6 +7,6 @@ import (
 
 // UserQueryRepositoryInterface holds the methods for the academic year query repository
 type UserQueryRepositoryInterface interface {
-	SelectUsers(data repositoryTypes.GetUser) ([]entity.User, error)
+	SelectUsers() ([]entity.User, error)
 	SelectUserByID(data repositoryTypes.GetUser) ([]entity.User, error)
 }

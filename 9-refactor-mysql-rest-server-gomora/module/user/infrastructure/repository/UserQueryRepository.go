@@ -15,8 +15,8 @@ type UserQueryRepository struct {
 	types.MySQLDBHandlerInterface
 }
 
-// SelectUsers select a user by user id
-func (repository *UserQueryRepository) SelectUsers(data repositoryTypes.GetUser) ([]entity.User, error) {
+// SelectUsers select a users
+func (repository *UserQueryRepository) SelectUsers() ([]entity.User, error) {
 	var user entity.User
 	var users []entity.User
 

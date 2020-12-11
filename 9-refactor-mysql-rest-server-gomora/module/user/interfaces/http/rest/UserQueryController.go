@@ -19,11 +19,9 @@ type UserQueryController struct {
 	application.UserQueryServiceInterface
 }
 
-// GetUsers get user
+// GetUsers get users
 func (controller *UserQueryController) GetUsers(w http.ResponseWriter, r *http.Request) {
-	var user serviceTypes.GetUser
-
-	res, err := controller.UserQueryServiceInterface.GetUsers(context.TODO(), user)
+	res, err := controller.UserQueryServiceInterface.GetUsers(context.TODO())
 	if err != nil {
 		var httpCode int
 		var errorMsg string

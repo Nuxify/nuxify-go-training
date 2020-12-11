@@ -15,12 +15,8 @@ type UserQueryService struct {
 }
 
 // GetUsers returns the users
-func (service *UserQueryService) GetUsers(ctx context.Context, data types.GetUser) ([]entity.User, error) {
-	var user repositoryTypes.GetUser
-
-	user.ID = data.ID
-
-	res, err := service.UserQueryRepositoryInterface.SelectUsers(user)
+func (service *UserQueryService) GetUsers(ctx context.Context) ([]entity.User, error) {
+	res, err := service.UserQueryRepositoryInterface.SelectUsers()
 	if err != nil {
 		return res, err
 	}
