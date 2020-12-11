@@ -5,7 +5,6 @@ import (
 
 	"rest-server/module/discussion/domain/entity"
 	"rest-server/module/discussion/domain/repository"
-	repositoryTypes "rest-server/module/discussion/infrastructure/repository/types"
 )
 
 // PostQueryRepositoryCircuitBreaker is the circuit breaker for the post query repository
@@ -21,11 +20,11 @@ type CommentQueryRepositoryCircuitBreaker struct {
 // =====================================POST=====================================
 
 // SelectPosts is a decorator for the select posts repository
-func (repository *PostQueryRepositoryCircuitBreaker) SelectPosts(data repositoryTypes.GetPost) ([]entity.Post, error) {
+func (repository *PostQueryRepositoryCircuitBreaker) SelectPosts() ([]entity.Post, error) {
 	output := make(chan []entity.Post, 1)
 	hystrix.ConfigureCommand("select_post", config.Settings())
 	errors := hystrix.Go("select_post", func() error {
-		posts, err := repository.PostQueryRepositoryInterface.SelectPosts(data)
+		posts, err := repository.PostQueryRepositoryInterface.SelectPosts()
 		if err != nil {
 			return err
 		}
@@ -45,11 +44,11 @@ func (repository *PostQueryRepositoryCircuitBreaker) SelectPosts(data repository
 // =====================================COMMENT=====================================
 
 // SelectComments is a decorator for the select comments repository
-func (repository *CommentQueryRepositoryCircuitBreaker) SelectComments(data repositoryTypes.GetComment) ([]entity.Comment, error) {
+func (repository *CommentQueryRepositoryCircuitBreaker) SelectComments() ([]entity.Comment, error) {
 	output := make(chan []entity.Comment, 1)
 	hystrix.ConfigureCommand("select_comment", config.Settings())
 	errors := hystrix.Go("select_comment", func() error {
-		comments, err := repository.CommentQueryRepositoryInterface.SelectComments(data)
+		comments, err := repository.CommentQueryRepositoryInterface.SelectComments()
 		if err != nil {
 			return err
 		}

@@ -22,12 +22,8 @@ type CommentQueryService struct {
 // ====================================POST====================================
 
 // GetPosts returns the Posts
-func (service *PostQueryService) GetPosts(ctx context.Context, data types.GetPost) ([]entity.Post, error) {
-	var post repositoryTypes.GetPost
-
-	post.ID = data.ID
-
-	res, err := service.PostQueryRepositoryInterface.SelectPosts(post)
+func (service *PostQueryService) GetPosts(ctx context.Context) ([]entity.Post, error) {
+	res, err := service.PostQueryRepositoryInterface.SelectPosts()
 	if err != nil {
 		return res, err
 	}
@@ -52,12 +48,8 @@ func (service *PostQueryService) GetPostByID(ctx context.Context, data types.Get
 // ====================================COMMENT====================================
 
 // GetComments returns the Comments
-func (service *CommentQueryService) GetComments(ctx context.Context, data types.GetComment) ([]entity.Comment, error) {
-	var comment repositoryTypes.GetComment
-
-	comment.ID = data.ID
-
-	res, err := service.CommentQueryRepositoryInterface.SelectComments(comment)
+func (service *CommentQueryService) GetComments(ctx context.Context) ([]entity.Comment, error) {
+	res, err := service.CommentQueryRepositoryInterface.SelectComments()
 	if err != nil {
 		return res, err
 	}

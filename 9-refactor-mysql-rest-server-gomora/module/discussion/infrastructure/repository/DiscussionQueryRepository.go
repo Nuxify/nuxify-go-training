@@ -22,8 +22,8 @@ type CommentQueryRepository struct {
 
 // =========================================POST=========================================
 
-// SelectPosts select a post by post id
-func (repository *PostQueryRepository) SelectPosts(data repositoryTypes.GetPost) ([]entity.Post, error) {
+// SelectPosts select a posts
+func (repository *PostQueryRepository) SelectPosts() ([]entity.Post, error) {
 	var post entity.Post
 	var posts []entity.Post
 
@@ -58,8 +58,8 @@ func (repository *PostQueryRepository) SelectPostByID(data repositoryTypes.GetPo
 
 // =========================================COMMENT=========================================
 
-// SelectComments select a comment by comment id
-func (repository *CommentQueryRepository) SelectComments(data repositoryTypes.GetComment) ([]entity.Comment, error) {
+// SelectComments select a comments
+func (repository *CommentQueryRepository) SelectComments() ([]entity.Comment, error) {
 	var comment entity.Comment
 	var comments []entity.Comment
 

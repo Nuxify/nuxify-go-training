@@ -28,9 +28,7 @@ type CommentQueryController struct {
 
 // GetPosts get post
 func (controller *PostQueryController) GetPosts(w http.ResponseWriter, r *http.Request) {
-	var post serviceTypes.GetPost
-
-	res, err := controller.PostQueryServiceInterface.GetPosts(context.TODO(), post)
+	res, err := controller.PostQueryServiceInterface.GetPosts(context.TODO())
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -143,9 +141,7 @@ func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *htt
 
 // GetComments get comment
 func (controller *CommentQueryController) GetComments(w http.ResponseWriter, r *http.Request) {
-	var comment serviceTypes.GetComment
-
-	res, err := controller.CommentQueryServiceInterface.GetComments(context.TODO(), comment)
+	res, err := controller.CommentQueryServiceInterface.GetComments(context.TODO())
 	if err != nil {
 		var httpCode int
 		var errorMsg string

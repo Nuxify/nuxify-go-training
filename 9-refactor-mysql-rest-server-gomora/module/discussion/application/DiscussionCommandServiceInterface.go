@@ -7,7 +7,7 @@ import (
 	"rest-server/module/discussion/infrastructure/service/types"
 )
 
-// PostCommandServiceInterface holds the implementable method for the Post command service
+// PostCommandServiceInterface holds the implementable method for the post command service
 type PostCommandServiceInterface interface {
 	CreatePost(ctx context.Context, data types.CreatePost) (entity.Post, error)
 	DeletePostByID(postID int64) error
