@@ -20,13 +20,12 @@ import (
 	userService "rest-server/module/user/infrastructure/service"
 	userREST "rest-server/module/user/interfaces/http/rest"
 
-	postRepository "rest-server/module/discussion/infrastructure/repository"
-	postService "rest-server/module/discussion/infrastructure/service"
-	postREST "rest-server/module/discussion/interfaces/http/rest"
-
-	commentRepository "rest-server/module/discussion/infrastructure/repository"
-	commentService "rest-server/module/discussion/infrastructure/service"
-	commentREST "rest-server/module/discussion/interfaces/http/rest"
+	discussionRepository "rest-server/module/discussion/infrastructure/repository"
+	discussionService "rest-server/module/discussion/infrastructure/service"
+	discussionREST "rest-server/module/discussion/interfaces/http/rest"
+	// commentRepository "rest-server/module/discussion/infrastructure/repository"
+	// commentService "rest-server/module/discussion/infrastructure/service"
+	// commentREST "rest-server/module/discussion/interfaces/http/rest"
 )
 
 // ServiceContainerInterface contains the dependency injected instances
@@ -34,10 +33,10 @@ type ServiceContainerInterface interface {
 	// REST
 	RegisterUserRESTCommandController() userREST.UserCommandController
 	RegisterUserRESTQueryController() userREST.UserQueryController
-	RegisterPostRESTCommandController() postREST.PostCommandController
-	RegisterPostRESTQueryController() postREST.PostQueryController
-	RegisterCommentRESTCommandController() commentREST.CommentCommandController
-	RegisterCommentRESTQueryController() commentREST.CommentQueryController
+	RegisterPostRESTCommandController() discussionREST.PostCommandController
+	RegisterPostRESTQueryController() discussionREST.PostQueryController
+	RegisterCommentRESTCommandController() discussionREST.CommentCommandController
+	RegisterCommentRESTQueryController() discussionREST.CommentQueryController
 }
 
 type kernel struct{}
@@ -77,10 +76,10 @@ func (k *kernel) RegisterUserRESTQueryController() userREST.UserQueryController 
 
 // ===============================================POST===============================================
 // RegisterPostRESTCommandController performs dependency injection to the RegisterPostRESTCommandController
-func (k *kernel) RegisterPostRESTCommandController() postREST.PostCommandController {
+func (k *kernel) RegisterPostRESTCommandController() discussionREST.PostCommandController {
 	service := k.postCommandServiceContainer()
 
-	controller := postREST.PostCommandController{
+	controller := discussionREST.PostCommandController{
 		PostCommandServiceInterface: service,
 	}
 
@@ -88,10 +87,10 @@ func (k *kernel) RegisterPostRESTCommandController() postREST.PostCommandControl
 }
 
 // RegisterPostRESTQueryController performs dependency injection to the RegisterPostRESTQueryController
-func (k *kernel) RegisterPostRESTQueryController() postREST.PostQueryController {
+func (k *kernel) RegisterPostRESTQueryController() discussionREST.PostQueryController {
 	service := k.postQueryServiceContainer()
 
-	controller := postREST.PostQueryController{
+	controller := discussionREST.PostQueryController{
 		PostQueryServiceInterface: service,
 	}
 
@@ -100,10 +99,10 @@ func (k *kernel) RegisterPostRESTQueryController() postREST.PostQueryController 
 
 // ===============================================COMMENT===============================================
 // RegisterCommentRESTCommandController performs dependency injection to the RegisterCommentRESTCommandController
-func (k *kernel) RegisterCommentRESTCommandController() commentREST.CommentCommandController {
+func (k *kernel) RegisterCommentRESTCommandController() discussionREST.CommentCommandController {
 	service := k.commentCommandServiceContainer()
 
-	controller := commentREST.CommentCommandController{
+	controller := discussionREST.CommentCommandController{
 		CommentCommandServiceInterface: service,
 	}
 
@@ -111,10 +110,10 @@ func (k *kernel) RegisterCommentRESTCommandController() commentREST.CommentComma
 }
 
 // RegisterCommentRESTQueryController performs dependency injection to the RegisterCommentRESTQueryController
-func (k *kernel) RegisterCommentRESTQueryController() commentREST.CommentQueryController {
+func (k *kernel) RegisterCommentRESTQueryController() discussionREST.CommentQueryController {
 	service := k.commentQueryServiceContainer()
 
-	controller := commentREST.CommentQueryController{
+	controller := discussionREST.CommentQueryController{
 		CommentQueryServiceInterface: service,
 	}
 
@@ -151,13 +150,13 @@ func (k *kernel) userQueryServiceContainer() *userService.UserQueryService {
 }
 
 // ===============================================POST===============================================
-func (k *kernel) postCommandServiceContainer() *postService.PostCommandService {
-	repository := &postRepository.PostCommandRepository{
+func (k *kernel) postCommandServiceContainer() *discussionService.PostCommandService {
+	repository := &discussionRepository.PostCommandRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &postService.PostCommandService{
-		PostCommandRepositoryInterface: &postRepository.PostCommandRepositoryCircuitBreaker{
+	service := &discussionService.PostCommandService{
+		PostCommandRepositoryInterface: &discussionRepository.PostCommandRepositoryCircuitBreaker{
 			PostCommandRepositoryInterface: repository,
 		},
 	}
@@ -165,13 +164,13 @@ func (k *kernel) postCommandServiceContainer() *postService.PostCommandService {
 	return service
 }
 
-func (k *kernel) postQueryServiceContainer() *postService.PostQueryService {
-	repository := &postRepository.PostQueryRepository{
+func (k *kernel) postQueryServiceContainer() *discussionService.PostQueryService {
+	repository := &discussionRepository.PostQueryRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &postService.PostQueryService{
-		PostQueryRepositoryInterface: &postRepository.PostQueryRepositoryCircuitBreaker{
+	service := &discussionService.PostQueryService{
+		PostQueryRepositoryInterface: &discussionRepository.PostQueryRepositoryCircuitBreaker{
 			PostQueryRepositoryInterface: repository,
 		},
 	}
@@ -180,13 +179,13 @@ func (k *kernel) postQueryServiceContainer() *postService.PostQueryService {
 }
 
 // ===============================================COMMENT===============================================
-func (k *kernel) commentCommandServiceContainer() *commentService.CommentCommandService {
-	repository := &commentRepository.CommentCommandRepository{
+func (k *kernel) commentCommandServiceContainer() *discussionService.CommentCommandService {
+	repository := &discussionRepository.CommentCommandRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &commentService.CommentCommandService{
-		CommentCommandRepositoryInterface: &commentRepository.CommentCommandRepositoryCircuitBreaker{
+	service := &discussionService.CommentCommandService{
+		CommentCommandRepositoryInterface: &discussionRepository.CommentCommandRepositoryCircuitBreaker{
 			CommentCommandRepositoryInterface: repository,
 		},
 	}
@@ -194,13 +193,13 @@ func (k *kernel) commentCommandServiceContainer() *commentService.CommentCommand
 	return service
 }
 
-func (k *kernel) commentQueryServiceContainer() *commentService.CommentQueryService {
-	repository := &commentRepository.CommentQueryRepository{
+func (k *kernel) commentQueryServiceContainer() *discussionService.CommentQueryService {
+	repository := &discussionRepository.CommentQueryRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &commentService.CommentQueryService{
-		CommentQueryRepositoryInterface: &commentRepository.CommentQueryRepositoryCircuitBreaker{
+	service := &discussionService.CommentQueryService{
+		CommentQueryRepositoryInterface: &discussionRepository.CommentQueryRepositoryCircuitBreaker{
 			CommentQueryRepositoryInterface: repository,
 		},
 	}
