@@ -23,9 +23,6 @@ import (
 	discussionRepository "rest-server/module/discussion/infrastructure/repository"
 	discussionService "rest-server/module/discussion/infrastructure/service"
 	discussionREST "rest-server/module/discussion/interfaces/http/rest"
-	// commentRepository "rest-server/module/discussion/infrastructure/repository"
-	// commentService "rest-server/module/discussion/infrastructure/service"
-	// commentREST "rest-server/module/discussion/interfaces/http/rest"
 )
 
 // ServiceContainerInterface contains the dependency injected instances
