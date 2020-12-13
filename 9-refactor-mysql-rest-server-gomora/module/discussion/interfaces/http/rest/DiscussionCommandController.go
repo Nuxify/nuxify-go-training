@@ -17,19 +17,14 @@ import (
 )
 
 // PostCommandController handles the rest api post command requests
-type PostCommandController struct {
-	application.PostCommandServiceInterface
-}
-
-// CommentCommandController handles the rest api comment command requests
-type CommentCommandController struct {
-	application.CommentCommandServiceInterface
+type DiscussionCommandController struct {
+	application.DiscussionCommandServiceInterface
 }
 
 // =====================================POST=====================================
 
 // CreatePost invokes the create post service
-func (controller *PostCommandController) CreatePost(w http.ResponseWriter, r *http.Request) {
+func (controller *DiscussionCommandController) CreatePost(w http.ResponseWriter, r *http.Request) {
 	var post serviceTypes.CreatePost
 
 	var request types.CreatePostRequest
@@ -48,7 +43,7 @@ func (controller *PostCommandController) CreatePost(w http.ResponseWriter, r *ht
 	post.AuthorID = request.AuthorID
 	post.Content = request.Content
 
-	res, err := controller.PostCommandServiceInterface.CreatePost(context.TODO(), post)
+	res, err := controller.DiscussionCommandServiceInterface.CreatePost(context.TODO(), post)
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -91,7 +86,7 @@ func (controller *PostCommandController) CreatePost(w http.ResponseWriter, r *ht
 }
 
 // DeletePostByID delete post by post id
-func (controller *PostCommandController) DeletePostByID(w http.ResponseWriter, r *http.Request) {
+func (controller *DiscussionCommandController) DeletePostByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -106,7 +101,7 @@ func (controller *PostCommandController) DeletePostByID(w http.ResponseWriter, r
 		return
 	}
 
-	err = controller.PostCommandServiceInterface.DeletePostByID(int64(id))
+	err = controller.DiscussionCommandServiceInterface.DeletePostByID(int64(id))
 	if err != nil {
 		response := viewmodels.HTTPResponseVM{
 			Status:    http.StatusInternalServerError,
@@ -129,7 +124,7 @@ func (controller *PostCommandController) DeletePostByID(w http.ResponseWriter, r
 }
 
 // UpdatePostByID invokes the create post service
-func (controller *PostCommandController) UpdatePostByID(w http.ResponseWriter, r *http.Request) {
+func (controller *DiscussionCommandController) UpdatePostByID(w http.ResponseWriter, r *http.Request) {
 	var post serviceTypes.UpdatePost
 
 	idStr := chi.URLParam(r, "id")
@@ -164,7 +159,7 @@ func (controller *PostCommandController) UpdatePostByID(w http.ResponseWriter, r
 	post.AuthorID = request.AuthorID
 	post.Content = request.Content
 
-	res, err := controller.PostCommandServiceInterface.UpdatePostByID(context.TODO(), post)
+	res, err := controller.DiscussionCommandServiceInterface.UpdatePostByID(context.TODO(), post)
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -205,7 +200,7 @@ func (controller *PostCommandController) UpdatePostByID(w http.ResponseWriter, r
 // =====================================COMMENT=====================================
 
 // CreateComment invokes the create comment service
-func (controller *CommentCommandController) CreateComment(w http.ResponseWriter, r *http.Request) {
+func (controller *DiscussionCommandController) CreateComment(w http.ResponseWriter, r *http.Request) {
 	var comment serviceTypes.CreateComment
 
 	var request types.CreateCommentRequest
@@ -225,7 +220,7 @@ func (controller *CommentCommandController) CreateComment(w http.ResponseWriter,
 	comment.AuthorID = request.AuthorID
 	comment.Content = request.Content
 
-	res, err := controller.CommentCommandServiceInterface.CreateComment(context.TODO(), comment)
+	res, err := controller.DiscussionCommandServiceInterface.CreateComment(context.TODO(), comment)
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -269,7 +264,7 @@ func (controller *CommentCommandController) CreateComment(w http.ResponseWriter,
 }
 
 // DeleteCommentByID delete comment by comment id
-func (controller *CommentCommandController) DeleteCommentByID(w http.ResponseWriter, r *http.Request) {
+func (controller *DiscussionCommandController) DeleteCommentByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -284,7 +279,7 @@ func (controller *CommentCommandController) DeleteCommentByID(w http.ResponseWri
 		return
 	}
 
-	err = controller.CommentCommandServiceInterface.DeleteCommentByID(int64(id))
+	err = controller.DiscussionCommandServiceInterface.DeleteCommentByID(int64(id))
 	if err != nil {
 		response := viewmodels.HTTPResponseVM{
 			Status:    http.StatusInternalServerError,
@@ -307,7 +302,7 @@ func (controller *CommentCommandController) DeleteCommentByID(w http.ResponseWri
 }
 
 // UpdateCommentByID invokes the create comment service
-func (controller *CommentCommandController) UpdateCommentByID(w http.ResponseWriter, r *http.Request) {
+func (controller *DiscussionCommandController) UpdateCommentByID(w http.ResponseWriter, r *http.Request) {
 	var comment serviceTypes.UpdateComment
 
 	idStr := chi.URLParam(r, "id")
@@ -341,7 +336,7 @@ func (controller *CommentCommandController) UpdateCommentByID(w http.ResponseWri
 
 	comment.Content = request.Content
 
-	res, err := controller.CommentCommandServiceInterface.UpdateCommentByID(context.TODO(), comment)
+	res, err := controller.DiscussionCommandServiceInterface.UpdateCommentByID(context.TODO(), comment)
 	if err != nil {
 		var httpCode int
 		var errorMsg string

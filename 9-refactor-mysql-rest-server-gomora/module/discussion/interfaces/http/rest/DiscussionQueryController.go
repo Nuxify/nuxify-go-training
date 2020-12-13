@@ -16,19 +16,19 @@ import (
 
 // PostQueryController handles the rest requests for post queries
 type PostQueryController struct {
-	application.PostQueryServiceInterface
+	application.DiscussionQueryServiceInterface
 }
 
 // CommentQueryController handles the rest requests for comment queries
 type CommentQueryController struct {
-	application.CommentQueryServiceInterface
+	application.DiscussionQueryServiceInterface
 }
 
 // ======================================POST======================================
 
 // GetPosts get post
 func (controller *PostQueryController) GetPosts(w http.ResponseWriter, r *http.Request) {
-	res, err := controller.PostQueryServiceInterface.GetPosts(context.TODO())
+	res, err := controller.DiscussionQueryServiceInterface.GetPosts(context.TODO())
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -92,7 +92,7 @@ func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *htt
 
 	post.ID = int64(id)
 
-	res, err := controller.PostQueryServiceInterface.GetPostByID(context.TODO(), post)
+	res, err := controller.DiscussionQueryServiceInterface.GetPostByID(context.TODO(), post)
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -141,7 +141,7 @@ func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *htt
 
 // GetComments get comment
 func (controller *CommentQueryController) GetComments(w http.ResponseWriter, r *http.Request) {
-	res, err := controller.CommentQueryServiceInterface.GetComments(context.TODO())
+	res, err := controller.DiscussionQueryServiceInterface.GetComments(context.TODO())
 	if err != nil {
 		var httpCode int
 		var errorMsg string
@@ -207,7 +207,7 @@ func (controller *CommentQueryController) GetCommentByID(w http.ResponseWriter, 
 
 	comment.ID = int64(id)
 
-	res, err := controller.CommentQueryServiceInterface.GetCommentByID(context.TODO(), comment)
+	res, err := controller.DiscussionQueryServiceInterface.GetCommentByID(context.TODO(), comment)
 	if err != nil {
 		var httpCode int
 		var errorMsg string

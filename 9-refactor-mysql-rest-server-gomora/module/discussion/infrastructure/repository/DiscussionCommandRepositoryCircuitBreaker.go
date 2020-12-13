@@ -9,14 +9,9 @@ import (
 	repositoryTypes "rest-server/module/discussion/infrastructure/repository/types"
 )
 
-// PostCommandRepositoryCircuitBreaker circuit breaker for post command repository
-type PostCommandRepositoryCircuitBreaker struct {
-	repository.PostCommandRepositoryInterface
-}
-
-// CommentCommandRepositoryCircuitBreaker circuit breaker for comment command repository
-type CommentCommandRepositoryCircuitBreaker struct {
-	repository.CommentCommandRepositoryInterface
+// DiscussionCommandRepositoryCircuitBreaker circuit breaker for post command repository
+type DiscussionCommandRepositoryCircuitBreaker struct {
+	repository.DiscussionCommandRepositoryInterface
 }
 
 var config = hystrix_config.Config{}
@@ -24,10 +19,10 @@ var config = hystrix_config.Config{}
 // =======================================POST=======================================
 
 // DeletePostByID is the decorator for the the post repository delete by id method
-func (repository *PostCommandRepositoryCircuitBreaker) DeletePostByID(postID int64) error {
+func (repository *DiscussionCommandRepositoryCircuitBreaker) DeletePostByID(postID int64) error {
 	hystrix.ConfigureCommand("delete_post_by_id", config.Settings())
 	errors := hystrix.Go("delete_post_by_id", func() error {
-		err := repository.PostCommandRepositoryInterface.DeletePostByID(postID)
+		err := repository.DiscussionCommandRepositoryInterface.DeletePostByID(postID)
 		if err != nil {
 			return err
 		}
@@ -44,11 +39,11 @@ func (repository *PostCommandRepositoryCircuitBreaker) DeletePostByID(postID int
 }
 
 // InsertPost decorator pattern to insert post
-func (repository *PostCommandRepositoryCircuitBreaker) InsertPost(data repositoryTypes.CreatePost) (entity.Post, error) {
+func (repository *DiscussionCommandRepositoryCircuitBreaker) InsertPost(data repositoryTypes.CreatePost) (entity.Post, error) {
 	output := make(chan entity.Post, 1)
 	hystrix.ConfigureCommand("insert_post", config.Settings())
 	errors := hystrix.Go("insert_post", func() error {
-		post, err := repository.PostCommandRepositoryInterface.InsertPost(data)
+		post, err := repository.DiscussionCommandRepositoryInterface.InsertPost(data)
 		if err != nil {
 			return err
 		}
@@ -66,11 +61,11 @@ func (repository *PostCommandRepositoryCircuitBreaker) InsertPost(data repositor
 }
 
 // UpdatePostByID is the decorator for the post repository update post method
-func (repository *PostCommandRepositoryCircuitBreaker) UpdatePostByID(data repositoryTypes.UpdatePost) (entity.Post, error) {
+func (repository *DiscussionCommandRepositoryCircuitBreaker) UpdatePostByID(data repositoryTypes.UpdatePost) (entity.Post, error) {
 	output := make(chan entity.Post, 1)
 	hystrix.ConfigureCommand("update_post", config.Settings())
 	errors := hystrix.Go("update_post", func() error {
-		post, err := repository.PostCommandRepositoryInterface.UpdatePostByID(data)
+		post, err := repository.DiscussionCommandRepositoryInterface.UpdatePostByID(data)
 		if err != nil {
 			return err
 		}
@@ -90,10 +85,10 @@ func (repository *PostCommandRepositoryCircuitBreaker) UpdatePostByID(data repos
 // =======================================COMMENT=======================================
 
 // DeleteCommentByID is the decorator for the the Comment repository delete by id method
-func (repository *CommentCommandRepositoryCircuitBreaker) DeleteCommentByID(commentID int64) error {
+func (repository *DiscussionCommandRepositoryCircuitBreaker) DeleteCommentByID(commentID int64) error {
 	hystrix.ConfigureCommand("delete_comment_by_id", config.Settings())
 	errors := hystrix.Go("delete_comment_by_id", func() error {
-		err := repository.CommentCommandRepositoryInterface.DeleteCommentByID(commentID)
+		err := repository.DiscussionCommandRepositoryInterface.DeleteCommentByID(commentID)
 		if err != nil {
 			return err
 		}
@@ -110,11 +105,11 @@ func (repository *CommentCommandRepositoryCircuitBreaker) DeleteCommentByID(comm
 }
 
 // InsertComment decorator pattern to insert Comment
-func (repository *CommentCommandRepositoryCircuitBreaker) InsertComment(data repositoryTypes.CreateComment) (entity.Comment, error) {
+func (repository *DiscussionCommandRepositoryCircuitBreaker) InsertComment(data repositoryTypes.CreateComment) (entity.Comment, error) {
 	output := make(chan entity.Comment, 1)
 	hystrix.ConfigureCommand("insert_comment", config.Settings())
 	errors := hystrix.Go("insert_comment", func() error {
-		comment, err := repository.CommentCommandRepositoryInterface.InsertComment(data)
+		comment, err := repository.DiscussionCommandRepositoryInterface.InsertComment(data)
 		if err != nil {
 			return err
 		}
@@ -132,11 +127,11 @@ func (repository *CommentCommandRepositoryCircuitBreaker) InsertComment(data rep
 }
 
 // UpdateCommentByID is the decorator for the Comment repository update Comment method
-func (repository *CommentCommandRepositoryCircuitBreaker) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
+func (repository *DiscussionCommandRepositoryCircuitBreaker) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
 	output := make(chan entity.Comment, 1)
 	hystrix.ConfigureCommand("update_comment", config.Settings())
 	errors := hystrix.Go("update_comment", func() error {
-		comment, err := repository.CommentCommandRepositoryInterface.UpdateCommentByID(data)
+		comment, err := repository.DiscussionCommandRepositoryInterface.UpdateCommentByID(data)
 		if err != nil {
 			return err
 		}

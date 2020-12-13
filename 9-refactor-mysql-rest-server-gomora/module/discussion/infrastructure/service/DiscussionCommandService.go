@@ -9,26 +9,21 @@ import (
 	"rest-server/module/discussion/infrastructure/service/types"
 )
 
-// PostCommandService handles the post command service logic
-type PostCommandService struct {
-	repository.PostCommandRepositoryInterface
-}
-
-// CommentCommandService handles the comment command service logic
-type CommentCommandService struct {
-	repository.CommentCommandRepositoryInterface
+// DiscussionCommandService handles the post command service logic
+type DiscussionCommandService struct {
+	repository.DiscussionCommandRepositoryInterface
 }
 
 // =================================POST=================================
 
 // CreatePost creates a resource and persist it in repository
-func (service *PostCommandService) CreatePost(ctx context.Context, data types.CreatePost) (entity.Post, error) {
+func (service *DiscussionCommandService) CreatePost(ctx context.Context, data types.CreatePost) (entity.Post, error) {
 	var post repositoryTypes.CreatePost
 
 	post.AuthorID = data.AuthorID
 	post.Content = data.Content
 
-	res, err := service.PostCommandRepositoryInterface.InsertPost(post)
+	res, err := service.DiscussionCommandRepositoryInterface.InsertPost(post)
 	if err != nil {
 		return res, err
 	}
@@ -37,8 +32,8 @@ func (service *PostCommandService) CreatePost(ctx context.Context, data types.Cr
 }
 
 // DeletePostByID delete post by post id
-func (service *PostCommandService) DeletePostByID(postID int64) error {
-	err := service.PostCommandRepositoryInterface.DeletePostByID(postID)
+func (service *DiscussionCommandService) DeletePostByID(postID int64) error {
+	err := service.DiscussionCommandRepositoryInterface.DeletePostByID(postID)
 	if err != nil {
 		return err
 	}
@@ -47,14 +42,14 @@ func (service *PostCommandService) DeletePostByID(postID int64) error {
 }
 
 // UpdatePostByID updates the resource and persist it in repository
-func (service *PostCommandService) UpdatePostByID(ctx context.Context, data types.UpdatePost) (entity.Post, error) {
+func (service *DiscussionCommandService) UpdatePostByID(ctx context.Context, data types.UpdatePost) (entity.Post, error) {
 	var post repositoryTypes.UpdatePost
 
 	post.ID = data.ID
 	post.AuthorID = data.AuthorID
 	post.Content = data.Content
 
-	res, err := service.PostCommandRepositoryInterface.UpdatePostByID(post)
+	res, err := service.DiscussionCommandRepositoryInterface.UpdatePostByID(post)
 	if err != nil {
 		return res, err
 	}
@@ -65,14 +60,14 @@ func (service *PostCommandService) UpdatePostByID(ctx context.Context, data type
 // =================================COMMENT=================================
 
 // CreateComment creates a resource and persist it in repository
-func (service *CommentCommandService) CreateComment(ctx context.Context, data types.CreateComment) (entity.Comment, error) {
+func (service *DiscussionCommandService) CreateComment(ctx context.Context, data types.CreateComment) (entity.Comment, error) {
 	var comment repositoryTypes.CreateComment
 
 	comment.PostID = data.PostID
 	comment.AuthorID = data.AuthorID
 	comment.Content = data.Content
 
-	res, err := service.CommentCommandRepositoryInterface.InsertComment(comment)
+	res, err := service.DiscussionCommandRepositoryInterface.InsertComment(comment)
 	if err != nil {
 		return res, err
 	}
@@ -81,8 +76,8 @@ func (service *CommentCommandService) CreateComment(ctx context.Context, data ty
 }
 
 // DeleteCommentByID delete Comment by comment id
-func (service *CommentCommandService) DeleteCommentByID(commentID int64) error {
-	err := service.CommentCommandRepositoryInterface.DeleteCommentByID(commentID)
+func (service *DiscussionCommandService) DeleteCommentByID(commentID int64) error {
+	err := service.DiscussionCommandRepositoryInterface.DeleteCommentByID(commentID)
 	if err != nil {
 		return err
 	}
@@ -91,13 +86,13 @@ func (service *CommentCommandService) DeleteCommentByID(commentID int64) error {
 }
 
 // UpdateCommentByID updates the resource and persist it in repository
-func (service *CommentCommandService) UpdateCommentByID(ctx context.Context, data types.UpdateComment) (entity.Comment, error) {
+func (service *DiscussionCommandService) UpdateCommentByID(ctx context.Context, data types.UpdateComment) (entity.Comment, error) {
 	var comment repositoryTypes.UpdateComment
 
 	comment.ID = data.ID
 	comment.Content = data.Content
 
-	res, err := service.CommentCommandRepositoryInterface.UpdateCommentByID(comment)
+	res, err := service.DiscussionCommandRepositoryInterface.UpdateCommentByID(comment)
 	if err != nil {
 		return res, err
 	}

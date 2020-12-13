@@ -9,21 +9,16 @@ import (
 	"rest-server/module/discussion/infrastructure/service/types"
 )
 
-// PostQueryService handles business logic in the service layer
-type PostQueryService struct {
-	repository.PostQueryRepositoryInterface
-}
-
-// CommentQueryService handles business logic in the service layer
-type CommentQueryService struct {
-	repository.CommentQueryRepositoryInterface
+// DiscussionQueryService handles business logic in the service layer
+type DiscussionQueryService struct {
+	repository.DiscussionQueryRepositoryInterface
 }
 
 // ====================================POST====================================
 
 // GetPosts returns the Posts
-func (service *PostQueryService) GetPosts(ctx context.Context) ([]entity.Post, error) {
-	res, err := service.PostQueryRepositoryInterface.SelectPosts()
+func (service *DiscussionQueryService) GetPosts(ctx context.Context) ([]entity.Post, error) {
+	res, err := service.DiscussionQueryRepositoryInterface.SelectPosts()
 	if err != nil {
 		return res, err
 	}
@@ -32,12 +27,12 @@ func (service *PostQueryService) GetPosts(ctx context.Context) ([]entity.Post, e
 }
 
 // GetPostByID returns the post by id
-func (service *PostQueryService) GetPostByID(ctx context.Context, data types.GetPost) ([]entity.Post, error) {
+func (service *DiscussionQueryService) GetPostByID(ctx context.Context, data types.GetPost) ([]entity.Post, error) {
 	var post repositoryTypes.GetPost
 
 	post.ID = data.ID
 
-	res, err := service.PostQueryRepositoryInterface.SelectPostByID(post)
+	res, err := service.DiscussionQueryRepositoryInterface.SelectPostByID(post)
 	if err != nil {
 		return res, err
 	}
@@ -48,8 +43,8 @@ func (service *PostQueryService) GetPostByID(ctx context.Context, data types.Get
 // ====================================COMMENT====================================
 
 // GetComments returns the Comments
-func (service *CommentQueryService) GetComments(ctx context.Context) ([]entity.Comment, error) {
-	res, err := service.CommentQueryRepositoryInterface.SelectComments()
+func (service *DiscussionQueryService) GetComments(ctx context.Context) ([]entity.Comment, error) {
+	res, err := service.DiscussionQueryRepositoryInterface.SelectComments()
 	if err != nil {
 		return res, err
 	}
@@ -58,12 +53,12 @@ func (service *CommentQueryService) GetComments(ctx context.Context) ([]entity.C
 }
 
 // GetCommentByID returns the comment by id
-func (service *CommentQueryService) GetCommentByID(ctx context.Context, data types.GetComment) ([]entity.Comment, error) {
+func (service *DiscussionQueryService) GetCommentByID(ctx context.Context, data types.GetComment) ([]entity.Comment, error) {
 	var comment repositoryTypes.GetComment
 
 	comment.ID = data.ID
 
-	res, err := service.CommentQueryRepositoryInterface.SelectCommentByID(comment)
+	res, err := service.DiscussionQueryRepositoryInterface.SelectCommentByID(comment)
 	if err != nil {
 		return res, err
 	}

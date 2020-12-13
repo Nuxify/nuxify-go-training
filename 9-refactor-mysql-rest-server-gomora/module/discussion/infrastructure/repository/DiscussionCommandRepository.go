@@ -11,20 +11,15 @@ import (
 	repositoryTypes "rest-server/module/discussion/infrastructure/repository/types"
 )
 
-// PostCommandRepository handles the post command repository logic
-type PostCommandRepository struct {
-	types.MySQLDBHandlerInterface
-}
-
-// CommentCommandRepository handles the comment command repository logic
-type CommentCommandRepository struct {
+// DiscussionCommandRepository handles the post command repository logic
+type DiscussionCommandRepository struct {
 	types.MySQLDBHandlerInterface
 }
 
 // ==========================================POST==========================================
 
 // DeletePostByID removes post by id
-func (repository *PostCommandRepository) DeletePostByID(postID int64) error {
+func (repository *DiscussionCommandRepository) DeletePostByID(postID int64) error {
 	post := &entity.Post{
 		ID: postID,
 	}
@@ -40,7 +35,7 @@ func (repository *PostCommandRepository) DeletePostByID(postID int64) error {
 }
 
 // InsertPost creates a new post resource
-func (repository *PostCommandRepository) InsertPost(data repositoryTypes.CreatePost) (entity.Post, error) {
+func (repository *DiscussionCommandRepository) InsertPost(data repositoryTypes.CreatePost) (entity.Post, error) {
 	post := &entity.Post{
 		AuthorID: data.AuthorID,
 		Content:  data.Content,
@@ -69,7 +64,7 @@ func (repository *PostCommandRepository) InsertPost(data repositoryTypes.CreateP
 }
 
 // UpdatePostByID update resource
-func (repository *PostCommandRepository) UpdatePostByID(data repositoryTypes.UpdatePost) (entity.Post, error) {
+func (repository *DiscussionCommandRepository) UpdatePostByID(data repositoryTypes.UpdatePost) (entity.Post, error) {
 	post := &entity.Post{
 		ID:       data.ID,
 		AuthorID: data.AuthorID,
@@ -89,7 +84,7 @@ func (repository *PostCommandRepository) UpdatePostByID(data repositoryTypes.Upd
 // ==========================================COMMENT==========================================
 
 // DeleteCommentByID removes Comment by id
-func (repository *CommentCommandRepository) DeleteCommentByID(commentID int64) error {
+func (repository *DiscussionCommandRepository) DeleteCommentByID(commentID int64) error {
 	comment := &entity.Comment{
 		ID: commentID,
 	}
@@ -105,7 +100,7 @@ func (repository *CommentCommandRepository) DeleteCommentByID(commentID int64) e
 }
 
 // InsertComment creates a new comment resource
-func (repository *CommentCommandRepository) InsertComment(data repositoryTypes.CreateComment) (entity.Comment, error) {
+func (repository *DiscussionCommandRepository) InsertComment(data repositoryTypes.CreateComment) (entity.Comment, error) {
 	comment := &entity.Comment{
 		PostID:   data.PostID,
 		AuthorID: data.AuthorID,
@@ -135,7 +130,7 @@ func (repository *CommentCommandRepository) InsertComment(data repositoryTypes.C
 }
 
 // UpdateCommentByID update resource
-func (repository *CommentCommandRepository) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
+func (repository *DiscussionCommandRepository) UpdateCommentByID(data repositoryTypes.UpdateComment) (entity.Comment, error) {
 	comment := &entity.Comment{
 		ID:      data.ID,
 		Content: data.Content,

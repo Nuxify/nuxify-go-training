@@ -30,9 +30,9 @@ type ServiceContainerInterface interface {
 	// REST
 	RegisterUserRESTCommandController() userREST.UserCommandController
 	RegisterUserRESTQueryController() userREST.UserQueryController
-	RegisterPostRESTCommandController() discussionREST.PostCommandController
+	RegisterPostRESTCommandController() discussionREST.DiscussionCommandController
 	RegisterPostRESTQueryController() discussionREST.PostQueryController
-	RegisterCommentRESTCommandController() discussionREST.CommentCommandController
+	RegisterCommentRESTCommandController() discussionREST.DiscussionCommandController
 	RegisterCommentRESTQueryController() discussionREST.CommentQueryController
 }
 
@@ -73,13 +73,12 @@ func (k *kernel) RegisterUserRESTQueryController() userREST.UserQueryController 
 
 // ===============================================POST===============================================
 // RegisterPostRESTCommandController performs dependency injection to the RegisterPostRESTCommandController
-func (k *kernel) RegisterPostRESTCommandController() discussionREST.PostCommandController {
+func (k *kernel) RegisterPostRESTCommandController() discussionREST.DiscussionCommandController {
 	service := k.postCommandServiceContainer()
 
-	controller := discussionREST.PostCommandController{
-		PostCommandServiceInterface: service,
+	controller := discussionREST.DiscussionCommandController{
+		DiscussionCommandServiceInterface: service,
 	}
-
 	return controller
 }
 
@@ -88,7 +87,7 @@ func (k *kernel) RegisterPostRESTQueryController() discussionREST.PostQueryContr
 	service := k.postQueryServiceContainer()
 
 	controller := discussionREST.PostQueryController{
-		PostQueryServiceInterface: service,
+		DiscussionQueryServiceInterface: service,
 	}
 
 	return controller
@@ -96,11 +95,11 @@ func (k *kernel) RegisterPostRESTQueryController() discussionREST.PostQueryContr
 
 // ===============================================COMMENT===============================================
 // RegisterCommentRESTCommandController performs dependency injection to the RegisterCommentRESTCommandController
-func (k *kernel) RegisterCommentRESTCommandController() discussionREST.CommentCommandController {
+func (k *kernel) RegisterCommentRESTCommandController() discussionREST.DiscussionCommandController {
 	service := k.commentCommandServiceContainer()
 
-	controller := discussionREST.CommentCommandController{
-		CommentCommandServiceInterface: service,
+	controller := discussionREST.DiscussionCommandController{
+		DiscussionCommandServiceInterface: service,
 	}
 
 	return controller
@@ -111,7 +110,7 @@ func (k *kernel) RegisterCommentRESTQueryController() discussionREST.CommentQuer
 	service := k.commentQueryServiceContainer()
 
 	controller := discussionREST.CommentQueryController{
-		CommentQueryServiceInterface: service,
+		DiscussionQueryServiceInterface: service,
 	}
 
 	return controller
@@ -147,28 +146,28 @@ func (k *kernel) userQueryServiceContainer() *userService.UserQueryService {
 }
 
 // ===============================================POST===============================================
-func (k *kernel) postCommandServiceContainer() *discussionService.PostCommandService {
-	repository := &discussionRepository.PostCommandRepository{
+func (k *kernel) postCommandServiceContainer() *discussionService.DiscussionCommandService {
+	repository := &discussionRepository.DiscussionCommandRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &discussionService.PostCommandService{
-		PostCommandRepositoryInterface: &discussionRepository.PostCommandRepositoryCircuitBreaker{
-			PostCommandRepositoryInterface: repository,
+	service := &discussionService.DiscussionCommandService{
+		DiscussionCommandRepositoryInterface: &discussionRepository.DiscussionCommandRepositoryCircuitBreaker{
+			DiscussionCommandRepositoryInterface: repository,
 		},
 	}
 
 	return service
 }
 
-func (k *kernel) postQueryServiceContainer() *discussionService.PostQueryService {
-	repository := &discussionRepository.PostQueryRepository{
+func (k *kernel) postQueryServiceContainer() *discussionService.DiscussionQueryService {
+	repository := &discussionRepository.DiscussionQueryRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &discussionService.PostQueryService{
-		PostQueryRepositoryInterface: &discussionRepository.PostQueryRepositoryCircuitBreaker{
-			PostQueryRepositoryInterface: repository,
+	service := &discussionService.DiscussionQueryService{
+		DiscussionQueryRepositoryInterface: &discussionRepository.PostQueryRepositoryCircuitBreaker{
+			DiscussionQueryRepositoryInterface: repository,
 		},
 	}
 
@@ -176,28 +175,28 @@ func (k *kernel) postQueryServiceContainer() *discussionService.PostQueryService
 }
 
 // ===============================================COMMENT===============================================
-func (k *kernel) commentCommandServiceContainer() *discussionService.CommentCommandService {
-	repository := &discussionRepository.CommentCommandRepository{
+func (k *kernel) commentCommandServiceContainer() *discussionService.DiscussionCommandService {
+	repository := &discussionRepository.DiscussionCommandRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &discussionService.CommentCommandService{
-		CommentCommandRepositoryInterface: &discussionRepository.CommentCommandRepositoryCircuitBreaker{
-			CommentCommandRepositoryInterface: repository,
+	service := &discussionService.DiscussionCommandService{
+		DiscussionCommandRepositoryInterface: &discussionRepository.DiscussionCommandRepositoryCircuitBreaker{
+			DiscussionCommandRepositoryInterface: repository,
 		},
 	}
 
 	return service
 }
 
-func (k *kernel) commentQueryServiceContainer() *discussionService.CommentQueryService {
-	repository := &discussionRepository.CommentQueryRepository{
+func (k *kernel) commentQueryServiceContainer() *discussionService.DiscussionQueryService {
+	repository := &discussionRepository.DiscussionQueryRepository{
 		MySQLDBHandlerInterface: mysqlDBHandler,
 	}
 
-	service := &discussionService.CommentQueryService{
-		CommentQueryRepositoryInterface: &discussionRepository.CommentQueryRepositoryCircuitBreaker{
-			CommentQueryRepositoryInterface: repository,
+	service := &discussionService.DiscussionQueryService{
+		DiscussionQueryRepositoryInterface: &discussionRepository.CommentQueryRepositoryCircuitBreaker{
+			DiscussionQueryRepositoryInterface: repository,
 		},
 	}
 

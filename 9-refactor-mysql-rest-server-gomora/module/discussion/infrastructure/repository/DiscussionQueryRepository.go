@@ -10,20 +10,15 @@ import (
 	repositoryTypes "rest-server/module/discussion/infrastructure/repository/types"
 )
 
-// PostQueryRepository handles databas access logic
-type PostQueryRepository struct {
-	types.MySQLDBHandlerInterface
-}
-
-// CommentQueryRepository handles databas access logic
-type CommentQueryRepository struct {
+// DiscussionQueryRepository handles databas access logic
+type DiscussionQueryRepository struct {
 	types.MySQLDBHandlerInterface
 }
 
 // =========================================POST=========================================
 
 // SelectPosts select a posts
-func (repository *PostQueryRepository) SelectPosts() ([]entity.Post, error) {
+func (repository *DiscussionQueryRepository) SelectPosts() ([]entity.Post, error) {
 	var post entity.Post
 	var posts []entity.Post
 
@@ -40,7 +35,7 @@ func (repository *PostQueryRepository) SelectPosts() ([]entity.Post, error) {
 }
 
 // SelectPostByID select a post by post id
-func (repository *PostQueryRepository) SelectPostByID(data repositoryTypes.GetPost) ([]entity.Post, error) {
+func (repository *DiscussionQueryRepository) SelectPostByID(data repositoryTypes.GetPost) ([]entity.Post, error) {
 	var post entity.Post
 	var posts []entity.Post
 
@@ -59,7 +54,7 @@ func (repository *PostQueryRepository) SelectPostByID(data repositoryTypes.GetPo
 // =========================================COMMENT=========================================
 
 // SelectComments select a comments
-func (repository *CommentQueryRepository) SelectComments() ([]entity.Comment, error) {
+func (repository *DiscussionQueryRepository) SelectComments() ([]entity.Comment, error) {
 	var comment entity.Comment
 	var comments []entity.Comment
 
@@ -76,7 +71,7 @@ func (repository *CommentQueryRepository) SelectComments() ([]entity.Comment, er
 }
 
 // SelectCommentByID select a comment by comment id
-func (repository *CommentQueryRepository) SelectCommentByID(data repositoryTypes.GetComment) ([]entity.Comment, error) {
+func (repository *DiscussionQueryRepository) SelectCommentByID(data repositoryTypes.GetComment) ([]entity.Comment, error) {
 	var comment entity.Comment
 	var comments []entity.Comment
 
