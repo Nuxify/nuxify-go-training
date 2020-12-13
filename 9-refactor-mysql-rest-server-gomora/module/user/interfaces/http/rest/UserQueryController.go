@@ -114,24 +114,19 @@ func (controller *UserQueryController) GetUserByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	var users []types.UserResponse
-
-	for _, user := range res {
-		users = append(users, types.UserResponse{
-			ID:            user.ID,
-			Email:         user.Email,
-			FirstName:     user.FirstName,
-			LastName:      user.LastName,
-			ContactNumber: user.ContactNumber,
-			CreatedAt:     user.CreatedAt.Unix(),
-			UpdatedAt:     user.UpdatedAt.Unix(),
-		})
-	}
 	response := viewmodels.HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully fetched user data.",
-		Data:    users,
+		Data: &types.UserResponse{
+			ID:            res.ID,
+			Email:         res.Email,
+			FirstName:     res.FirstName,
+			LastName:      res.LastName,
+			ContactNumber: res.ContactNumber,
+			CreatedAt:     res.CreatedAt.Unix(),
+			UpdatedAt:     res.UpdatedAt.Unix(),
+		},
 	}
 
 	response.JSON(w)

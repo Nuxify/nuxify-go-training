@@ -27,7 +27,7 @@ func (service *DiscussionQueryService) GetPosts(ctx context.Context) ([]entity.P
 }
 
 // GetPostByID returns the post by id
-func (service *DiscussionQueryService) GetPostByID(ctx context.Context, data types.GetPost) ([]entity.Post, error) {
+func (service *DiscussionQueryService) GetPostByID(ctx context.Context, data types.GetPost) (entity.Post, error) {
 	var post repositoryTypes.GetPost
 
 	post.ID = data.ID
@@ -53,7 +53,7 @@ func (service *DiscussionQueryService) GetComments(ctx context.Context) ([]entit
 }
 
 // GetCommentByID returns the comment by id
-func (service *DiscussionQueryService) GetCommentByID(ctx context.Context, data types.GetComment) ([]entity.Comment, error) {
+func (service *DiscussionQueryService) GetCommentByID(ctx context.Context, data types.GetComment) (entity.Comment, error) {
 	var comment repositoryTypes.GetComment
 
 	comment.ID = data.ID

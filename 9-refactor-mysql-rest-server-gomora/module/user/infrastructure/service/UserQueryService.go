@@ -25,7 +25,7 @@ func (service *UserQueryService) GetUsers(ctx context.Context) ([]entity.User, e
 }
 
 // GetUserByID returns the user by id
-func (service *UserQueryService) GetUserByID(ctx context.Context, data types.GetUser) ([]entity.User, error) {
+func (service *UserQueryService) GetUserByID(ctx context.Context, data types.GetUser) (entity.User, error) {
 	var user repositoryTypes.GetUser
 
 	user.ID = data.ID

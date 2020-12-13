@@ -8,7 +8,7 @@ import (
 // DiscussionQueryRepositoryInterface holds the methods for the discussion query repository
 type DiscussionQueryRepositoryInterface interface {
 	SelectPosts() ([]entity.Post, error)
-	SelectPostByID(data repositoryTypes.GetPost) ([]entity.Post, error)
+	SelectPostByID(data repositoryTypes.GetPost) (entity.Post, error)
 	SelectComments() ([]entity.Comment, error)
-	SelectCommentByID(data repositoryTypes.GetComment) ([]entity.Comment, error)
+	SelectCommentByID(data repositoryTypes.GetComment) (entity.Comment, error)
 }

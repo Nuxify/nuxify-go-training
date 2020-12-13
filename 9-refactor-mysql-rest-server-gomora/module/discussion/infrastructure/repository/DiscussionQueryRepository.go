@@ -35,7 +35,7 @@ func (repository *DiscussionQueryRepository) SelectPosts() ([]entity.Post, error
 }
 
 // SelectPostByID select a post by post id
-func (repository *DiscussionQueryRepository) SelectPostByID(data repositoryTypes.GetPost) ([]entity.Post, error) {
+func (repository *DiscussionQueryRepository) SelectPostByID(data repositoryTypes.GetPost) (entity.Post, error) {
 	var post entity.Post
 	var posts []entity.Post
 
@@ -43,12 +43,12 @@ func (repository *DiscussionQueryRepository) SelectPostByID(data repositoryTypes
 
 	err := repository.Query(stmt, map[string]interface{}{"id": data.ID}, &posts)
 	if err != nil {
-		return posts, errors.New(apiError.DatabaseError)
+		return entity.Post{}, errors.New(apiError.DatabaseError)
 	} else if len(posts) == 0 {
-		return posts, errors.New(apiError.MissingRecord)
+		return entity.Post{}, errors.New(apiError.MissingRecord)
 	}
 
-	return posts, nil
+	return posts[0], nil
 }
 
 // =========================================COMMENT=========================================
@@ -71,7 +71,7 @@ func (repository *DiscussionQueryRepository) SelectComments() ([]entity.Comment,
 }
 
 // SelectCommentByID select a comment by comment id
-func (repository *DiscussionQueryRepository) SelectCommentByID(data repositoryTypes.GetComment) ([]entity.Comment, error) {
+func (repository *DiscussionQueryRepository) SelectCommentByID(data repositoryTypes.GetComment) (entity.Comment, error) {
 	var comment entity.Comment
 	var comments []entity.Comment
 
@@ -79,10 +79,10 @@ func (repository *DiscussionQueryRepository) SelectCommentByID(data repositoryTy
 
 	err := repository.Query(stmt, map[string]interface{}{"id": data.ID}, &comments)
 	if err != nil {
-		return comments, errors.New(apiError.DatabaseError)
+		return entity.Comment{}, errors.New(apiError.DatabaseError)
 	} else if len(comments) == 0 {
-		return comments, errors.New(apiError.MissingRecord)
+		return entity.Comment{}, errors.New(apiError.MissingRecord)
 	}
 
-	return comments, nil
+	return comments[0], nil
 }

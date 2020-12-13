@@ -16,7 +16,7 @@ import (
 	types "rest-server/module/discussion/interfaces/http"
 )
 
-// PostCommandController handles the rest api post command requests
+// DiscussionCommandController handles the rest api discussion command requests
 type DiscussionCommandController struct {
 	application.DiscussionCommandServiceInterface
 }

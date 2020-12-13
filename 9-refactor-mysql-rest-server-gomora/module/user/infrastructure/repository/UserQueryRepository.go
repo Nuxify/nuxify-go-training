@@ -33,7 +33,7 @@ func (repository *UserQueryRepository) SelectUsers() ([]entity.User, error) {
 }
 
 // SelectUserByID select a user by user id
-func (repository *UserQueryRepository) SelectUserByID(data repositoryTypes.GetUser) ([]entity.User, error) {
+func (repository *UserQueryRepository) SelectUserByID(data repositoryTypes.GetUser) (entity.User, error) {
 	var user entity.User
 	var users []entity.User
 
@@ -41,10 +41,10 @@ func (repository *UserQueryRepository) SelectUserByID(data repositoryTypes.GetUs
 
 	err := repository.Query(stmt, map[string]interface{}{"id": data.ID}, &users)
 	if err != nil {
-		return users, errors.New(apiError.DatabaseError)
+		return entity.User{}, errors.New(apiError.DatabaseError)
 	} else if len(users) == 0 {
-		return users, errors.New(apiError.MissingRecord)
+		return entity.User{}, errors.New(apiError.MissingRecord)
 	}
 
-	return users, nil
+	return users[0], nil
 }

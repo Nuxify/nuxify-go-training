@@ -57,6 +57,7 @@ func (controller *PostQueryController) GetPosts(w http.ResponseWriter, r *http.R
 
 	for _, post := range res {
 		posts = append(posts, types.PostResponse{
+			ID:        post.ID,
 			Content:   post.Content,
 			CreatedAt: post.CreatedAt.Unix(),
 			UpdatedAt: post.UpdatedAt.Unix(),
@@ -117,21 +118,16 @@ func (controller *PostQueryController) GetPostByID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	var posts []types.PostResponse
-
-	for _, post := range res {
-		posts = append(posts, types.PostResponse{
-			ID:        post.ID,
-			Content:   post.Content,
-			CreatedAt: post.CreatedAt.Unix(),
-			UpdatedAt: post.UpdatedAt.Unix(),
-		})
-	}
 	response := viewmodels.HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully fetched post data.",
-		Data:    posts,
+		Data: &types.PostResponse{
+			ID:        res.ID,
+			Content:   res.Content,
+			CreatedAt: res.CreatedAt.Unix(),
+			UpdatedAt: res.UpdatedAt.Unix(),
+		},
 	}
 
 	response.JSON(w)
@@ -232,22 +228,17 @@ func (controller *CommentQueryController) GetCommentByID(w http.ResponseWriter, 
 		return
 	}
 
-	var comments []types.CommentResponse
-
-	for _, comment := range res {
-		comments = append(comments, types.CommentResponse{
-			ID:        comment.ID,
-			PostID:    comment.PostID,
-			Content:   comment.Content,
-			CreatedAt: comment.CreatedAt.Unix(),
-			UpdatedAt: comment.UpdatedAt.Unix(),
-		})
-	}
 	response := viewmodels.HTTPResponseVM{
 		Status:  http.StatusOK,
 		Success: true,
 		Message: "Successfully fetched comment data.",
-		Data:    comments,
+		Data: &types.CommentResponse{
+			ID:        res.ID,
+			PostID:    res.PostID,
+			Content:   res.Content,
+			CreatedAt: res.CreatedAt.Unix(),
+			UpdatedAt: res.UpdatedAt.Unix(),
+		},
 	}
 
 	response.JSON(w)
