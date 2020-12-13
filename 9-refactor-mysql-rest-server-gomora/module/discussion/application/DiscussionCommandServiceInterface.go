@@ -10,9 +10,9 @@ import (
 // DiscussionCommandServiceInterface holds the implementable method for the discussion command service
 type DiscussionCommandServiceInterface interface {
 	CreatePost(ctx context.Context, data types.CreatePost) (entity.Post, error)
-	DeletePostByID(postID int64) error
-	UpdatePostByID(ctx context.Context, data types.UpdatePost) (entity.Post, error)
 	CreateComment(ctx context.Context, data types.CreateComment) (entity.Comment, error)
+	DeletePostByID(postID int64) error
 	DeleteCommentByID(commentID int64) error
+	UpdatePostByID(ctx context.Context, data types.UpdatePost) (entity.Post, error)
 	UpdateCommentByID(ctx context.Context, data types.UpdateComment) (entity.Comment, error)
 }

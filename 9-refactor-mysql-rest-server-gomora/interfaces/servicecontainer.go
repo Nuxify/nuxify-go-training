@@ -166,7 +166,7 @@ func (k *kernel) postQueryServiceContainer() *discussionService.DiscussionQueryS
 	}
 
 	service := &discussionService.DiscussionQueryService{
-		DiscussionQueryRepositoryInterface: &discussionRepository.PostQueryRepositoryCircuitBreaker{
+		DiscussionQueryRepositoryInterface: &discussionRepository.DiscussionQueryRepositoryCircuitBreaker{
 			DiscussionQueryRepositoryInterface: repository,
 		},
 	}
@@ -195,7 +195,7 @@ func (k *kernel) commentQueryServiceContainer() *discussionService.DiscussionQue
 	}
 
 	service := &discussionService.DiscussionQueryService{
-		DiscussionQueryRepositoryInterface: &discussionRepository.CommentQueryRepositoryCircuitBreaker{
+		DiscussionQueryRepositoryInterface: &discussionRepository.DiscussionQueryRepositoryCircuitBreaker{
 			DiscussionQueryRepositoryInterface: repository,
 		},
 	}
